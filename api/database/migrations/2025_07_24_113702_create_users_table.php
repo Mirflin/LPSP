@@ -14,9 +14,12 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('last_name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->unsignedBigInteger("permission")->index()->default(3);
+            $table->foreign("permission")->references("id")->on("users_permissions");
             $table->rememberToken();
             $table->timestamps();
         });
@@ -35,6 +38,10 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+
+        DB::table('users')->insert([
+            ['name' => 'Root', 'last_name' => '...', 'email' => 'admin@test.com', 'password' => bcrypt('password'), 'permission' => 1],
+        ]);
     }
 
     /**

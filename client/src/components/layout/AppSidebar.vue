@@ -16,29 +16,30 @@
     <div
       :class="[
         'py-8 flex',
-        !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start',
+        !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-center',
       ]"
     >
       <router-link to="/">
         <img
           v-if="isExpanded || isHovered || isMobileOpen"
-          class="dark:hidden"
-          src="/images/logo/logo.svg"
+          class="h-30 dark:hidden"
+          src="/images/logo/main-logo.jpg"
           alt="Logo"
           width="150"
           height="40"
         />
         <img
           v-if="isExpanded || isHovered || isMobileOpen"
-          class="hidden dark:block"
-          src="/images/logo/logo-dark.svg"
+          class="h-30 hidden dark:block"
+          src="/images/logo/main-logo.jpg"
           alt="Logo"
           width="150"
           height="40"
         />
         <img
           v-else
-          src="/images/logo/logo-icon.svg"
+          class="h-10"
+          src="/images/logo/main-logo.jpg"
           alt="Logo"
           width="32"
           height="32"
@@ -300,14 +301,6 @@ const menuGroups = [
           { name: "Buttons", path: "/buttons", pro: false },
           { name: "Images", path: "/images", pro: false },
           { name: "Videos", path: "/videos", pro: false },
-        ],
-      },
-      {
-        icon: PlugInIcon,
-        name: "Authentication",
-        subItems: [
-          { name: "Signin", path: "/signin", pro: false },
-          { name: "Signup", path: "/signup", pro: false },
         ],
       },
       // ... Add other menu items here

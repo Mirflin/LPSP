@@ -1,30 +1,53 @@
 <template>
   <div>
+    <div v-auto-animate class="alert_center">
+        <Alert
+          v-if="ifSaved"
+          variant="success"
+          title="Profile Updated"
+          message="Profile saved successfully."
+          :showLink="false"
+        />
+        <Alert
+          v-if="ifError"
+          variant="error"
+          title="Warning Message"
+          :message="error"
+          :showLink="false"
+        />
+      </div>
     <div class="p-5 mb-6 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
         <div class="flex flex-col items-center w-full gap-6 xl:flex-row">
           <div
             class="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800"
           >
-            <img src="/images/user/owner.jpg" alt="user" />
+            <input
+              type="file"
+              accept="image/png, image/jpeg, image/jpg"
+              @change="onFileChange"
+              class="cursor-pointer w-20 h-20 opacity-0 absolute"
+              ref="fileInput"
+            />
+            <img :src=" auth.profile.image ? `http://192.168.88.46:8000/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'" />
           </div>
           <div class="order-3 xl:order-2">
             <h4
               class="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left"
             >
-              Musharof Chowdhury
+              {{auth.user.name }} {{ auth.user.last_name }}
             </h4>
             <div
               class="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left"
             >
-              <p class="text-sm text-gray-500 dark:text-gray-400">Team Manager</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ auth.profile.bio }}</p>
               <div class="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Arizona, United States</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ auth.profile.city }}, {{ auth.profile.country }}</p>
             </div>
           </div>
           <div class="flex items-center order-2 gap-2 grow xl:order-3 xl:justify-end">
             <a
-              href="https://www.facebook.com/PimjoHQ"
+              :href="auth.profile.facebook"
               target="_blank"
               rel="noopener"
               class="social-button"
@@ -43,7 +66,7 @@
                 />
               </svg>
             </a>
-            <a href="https://x.com/PimjoHQ" target="_blank" rel="noopener" class="social-button">
+            <a :href="auth.profile.twitter" target="_blank" rel="noopener" class="social-button">
               <svg
                 class="fill-current"
                 width="20"
@@ -59,7 +82,7 @@
               </svg>
             </a>
             <a
-              href="https://www.linkedin.com/company/pimjo/"
+              :href="auth.profile.linkedId"
               target="_blank"
               rel="noopener"
               class="social-button"
@@ -79,7 +102,7 @@
               </svg>
             </a>
             <a
-              href="https://www.instagram.com/PimjoHQ"
+              :href="auth.profile.instagram"
               target="_blank"
               rel="noopener"
               class="social-button"
@@ -154,7 +177,7 @@
               Update your details to keep your profile up-to-date.
             </p>
           </div>
-          <form class="flex flex-col">
+          <form class="flex flex-col" @submit="saveProfile" @submit.prevent>
             <div class="custom-scrollbar h-[458px] overflow-y-auto p-2">
               <div>
                 <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
@@ -170,7 +193,8 @@
                     </label>
                     <input
                       type="text"
-                      value="https://www.facebook.com/PimjoHQ"
+                      disabled
+                      v-model="form.facebook"
                       class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                     />
                   </div>
@@ -183,7 +207,8 @@
                     </label>
                     <input
                       type="text"
-                      value="https://x.com/PimjoHQ"
+                      disabled
+                      v-model="form.twitter"
                       class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                     />
                   </div>
@@ -196,7 +221,8 @@
                     </label>
                     <input
                       type="text"
-                      value="https://www.linkedin.com/company/pimjo/posts/?feedView=all"
+                      disabled
+                      v-model="form.linkedId"
                       class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                     />
                   </div>
@@ -209,7 +235,8 @@
                     </label>
                     <input
                       type="text"
-                      value="https://instagram.com/PimjoHQ"
+                      disabled
+                      v-model="form.instagram"
                       class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                     />
                   </div>
@@ -229,7 +256,7 @@
                     </label>
                     <input
                       type="text"
-                      value="Musharof"
+                      v-model="form.name"
                       class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                     />
                   </div>
@@ -242,7 +269,7 @@
                     </label>
                     <input
                       type="text"
-                      value="Chowdhury"
+                      v-model="form.last_name"
                       class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                     />
                   </div>
@@ -255,7 +282,7 @@
                     </label>
                     <input
                       type="text"
-                      value="randomuser@pimjo.com"
+                      v-model="form.email"
                       class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                     />
                   </div>
@@ -268,7 +295,7 @@
                     </label>
                     <input
                       type="text"
-                      value="+09 363 398 46"
+                      v-model="form.phone"
                       class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                     />
                   </div>
@@ -281,7 +308,53 @@
                     </label>
                     <input
                       type="text"
-                      value="Team Manager"
+                      v-model="form.bio"
+                      class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="mt-7">
+                <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
+                  Address
+                </h5>
+
+                <div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+                  <div class="col-span-2 lg:col-span-1">
+                    <label
+                      class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+                    >
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      v-model="form.country"
+                      class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                    />
+                  </div>
+
+                  <div class="col-span-2 lg:col-span-1">
+                    <label
+                      class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+                    >
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      v-model="form.city"
+                      class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                    />
+                  </div>
+
+                  <div class="col-span-2 lg:col-span-1">
+                    <label
+                      class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+                    >
+                      Postal code
+                    </label>
+                    <input
+                      type="text"
+                      v-model="form.postal_code"
                       class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                     />
                   </div>
@@ -290,11 +363,11 @@
             </div>
             <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
               <button
-                @click="isProfileInfoModal = false"
+                @click="isProfileInfoModal = false; cancel()"
                 type="button"
                 class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
               >
-                Close
+                Cancel
               </button>
               <button
                 @click="saveProfile"
@@ -312,14 +385,137 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import Modal from './Modal.vue'
+import { useAuthStore } from '../../storage/auth'
+import axios from 'axios'
 
+const auth = useAuthStore()
+const emit = defineEmits(['fetch_profile'])
 const isProfileInfoModal = ref(false)
+const loading = ref(false)
+const ifSaved = ref(false)
+const ifError = ref(false)
+const error = ref('')
 
-const saveProfile = () => {
-  // Implement save profile logic here
-  console.log('Profile saved')
+const selectedFile = ref(null)
+
+const form = reactive({
+  facebook: auth.profile.facebook || '',
+  twitter: auth.profile.twitter || '',
+  linkedId: auth.profile.linkedId || '',
+  instagram: auth.profile.instagram || '',
+  name: auth.user.name || '',
+  last_name: auth.user.last_name || '',
+  email: auth.user.email || '',
+  phone: auth.profile.phone || '',
+  bio: auth.profile.bio || '',
+  country: auth.profile.country || '',
+  city: auth.profile.city || '',
+  postal_code: auth.profile.postal_code || ''
+})
+
+const saveProfile = async () => {
+  error.value = validateForm()
+    if (error.value) {
+      ifError.value = true
+      setTimeout(() => {
+        ifError.value = false
+      }, 3000)
+      cancel()
+    }else{
+      try {
+        await axios.patch('api/profile-update', form)
+        ifSaved.value = true
+        setTimeout(() => {
+          ifSaved.value = false
+        }, 3000)
+      }catch(err) {
+        error.value = 'Failed to update profile. Please try again.'
+        ifError.value = true
+        setTimeout(() => {
+          ifError.value = false
+        }, 3000)
+      }
+      auth.attempt()
+      emit('fetch_profile')
+      isProfileInfoModal.value = false
+  }
+}
+
+const onFileChange = async (event) => {
+  const file = event.target.files[0]
+  selectedFile.value = file
+  let imageBase64 = ''
+
+  if (selectedFile.value) {
+    imageBase64 = await fileToBase64(selectedFile.value)
+  }
+
+  try{
+    const response = await axios.patch('api/profile-image', {image: imageBase64})
+    if (response.status === 200) {
+      emit('fetch_profile')
+      isProfileInfoModal.value = false
+    } else {
+      error.value = 'Failed to upload image. Please try again.'
+      ifError.value = true
+      setTimeout(() => {
+        ifError.value = false
+      }, 3000)
+    }
+  }catch(err) {
+    error.value = 'Failed to upload image. Please try again.'
+    ifError.value = true
+    setTimeout(() => {
+      ifError.value = false
+    }, 3000)
+  }
+}
+
+const validateForm = () => {
+  if (!form.name) return 'Name is required'
+  if (!form.last_name) return 'Last Name is required'
+  if (!form.email) return 'Email is required'
+  if (!form.country) return 'Country is required'
+  if (!form.phone) return 'Phone is required'
+  return ''
+}
+
+const cancel = () => {
+  form.facebook = auth.profile.facebook || ''
+  form.twitter = auth.profile.twitter || ''
+  form.linkedId = auth.profile.linkedId || ''
+  form.instagram = auth.profile.instagram || ''
+  form.name = auth.user.name || ''
+  form.last_name = auth.user.last_name || ''
+  form.email = auth.user.email || ''
+  form.phone = auth.profile.phone || ''
+  form.bio = auth.profile.bio || ''
+  form.country = auth.profile.country || ''
+  form.city = auth.profile.city || ''
+  form.postal_code = auth.profile.postal_code || ''
   isProfileInfoModal.value = false
 }
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = error => reject(error)
+    reader.readAsDataURL(file)
+  })
+}
 </script>
+
+<style scooped>
+.alert_center{
+  position: fixed;
+  height: auto;
+  z-index: 10;
+  width: 25rem;
+  top: 10%;
+  left: 55%;
+  margin-left: -12.5rem;
+}
+</style>

@@ -13,6 +13,7 @@ const router = createRouter({
       component: () => import('../views/Ecommerce.vue'),
       meta: {
         title: 'eCommerce Dashboard',
+        requireAuth: true
       },
     },
     {
@@ -21,6 +22,7 @@ const router = createRouter({
       component: () => import('../views/Others/Calendar.vue'),
       meta: {
         title: 'Calendar',
+        requireAuth: true
       },
     },
     {
@@ -29,6 +31,7 @@ const router = createRouter({
       component: () => import('../views/Others/UserProfile.vue'),
       meta: {
         title: 'Profile',
+        requireAuth: true
       },
     },
     {
@@ -37,6 +40,7 @@ const router = createRouter({
       component: () => import('../views/Forms/FormElements.vue'),
       meta: {
         title: 'Form Elements',
+        requireAuth: true
       },
     },
     {
@@ -45,17 +49,24 @@ const router = createRouter({
       component: () => import('../views/Tables/BasicTables.vue'),
       meta: {
         title: 'Basic Tables',
+        requireAuth: true
       },
     },
     {
       path: '/line-chart',
       name: 'Line Chart',
       component: () => import('../views/Chart/LineChart/LineChart.vue'),
+      meta: {
+        requireAuth: true
+      },
     },
     {
       path: '/bar-chart',
       name: 'Bar Chart',
       component: () => import('../views/Chart/BarChart/BarChart.vue'),
+      meta: {
+        requireAuth: true
+      },
     },
     {
       path: '/alerts',
@@ -63,6 +74,7 @@ const router = createRouter({
       component: () => import('../views/UiElements/Alerts.vue'),
       meta: {
         title: 'Alerts',
+        requireAuth: true
       },
     },
     {
@@ -71,6 +83,7 @@ const router = createRouter({
       component: () => import('../views/UiElements/Avatars.vue'),
       meta: {
         title: 'Avatars',
+        requireAuth: true
       },
     },
     {
@@ -79,6 +92,7 @@ const router = createRouter({
       component: () => import('../views/UiElements/Badges.vue'),
       meta: {
         title: 'Badge',
+        requireAuth: true
       },
     },
 
@@ -88,6 +102,7 @@ const router = createRouter({
       component: () => import('../views/UiElements/Buttons.vue'),
       meta: {
         title: 'Buttons',
+        requireAuth: true
       },
     },
 
@@ -97,6 +112,7 @@ const router = createRouter({
       component: () => import('../views/UiElements/Images.vue'),
       meta: {
         title: 'Images',
+        requireAuth: true
       },
     },
     {
@@ -105,6 +121,7 @@ const router = createRouter({
       component: () => import('../views/UiElements/Videos.vue'),
       meta: {
         title: 'Videos',
+        requireAuth: true
       },
     },
     {
@@ -113,6 +130,7 @@ const router = createRouter({
       component: () => import('../views/Pages/BlankPage.vue'),
       meta: {
         title: 'Blank',
+        requireAuth: true
       },
     },
 
@@ -122,6 +140,7 @@ const router = createRouter({
       component: () => import('../views/Errors/FourZeroFour.vue'),
       meta: {
         title: '404 Error',
+        requireAuth: true
       },
     },
 
@@ -154,7 +173,7 @@ router.beforeEach(async (to , from, next) => {
   }
 
   if(to.meta.requireAuth && !auth.authenticated){
-    next('/login')
+    next('/signin')
   }else if(to.meta.guest && auth.authenticated){
     next('/')
   }

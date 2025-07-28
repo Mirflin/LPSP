@@ -5,6 +5,7 @@ import axios from 'axios';
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref()
+    const profile = ref({})
 
     const authenticated = ref(false)
     const isAuthResolved = ref(false)
@@ -18,7 +19,6 @@ export const useAuthStore = defineStore('auth', () => {
 
             return null
         } catch(error){
-
             return "Invalid Credentials"
         }
     }
@@ -27,11 +27,13 @@ export const useAuthStore = defineStore('auth', () => {
         await axios.get('/sanctum/csrf-cookie')
 
         try{
+            console.log(credentials)
             await axios.post('/register', credentials)
             await attempt()
+
             return null
         } catch(error){
-          console.log(error)
+            console.log(error)
             return error
         }
     }
@@ -39,7 +41,6 @@ export const useAuthStore = defineStore('auth', () => {
     const logout = async () => {
         try{
             await axios.post('/logout')
-
             user.value = {}
             authenticated.value = false
             return null
@@ -52,8 +53,8 @@ export const useAuthStore = defineStore('auth', () => {
     const attempt = async () => {
         try{
             const response = await axios.get('/api/user')
-
             user.value = response.data
+            
             authenticated.value = true
         } catch(error){
             user.value = {}
@@ -65,6 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     return{
         user,
+        profile,
         authenticated,
         login,
         register,

@@ -12,16 +12,18 @@ import router from '@/router/index.js'
 import VueApexCharts from 'vue3-apexcharts'
 import axios from 'axios'
 import {createPinia} from 'pinia'
+import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
-axios.defaults.baseURL = "127.0.0.1:8000";
+axios.defaults.baseURL = "http://192.168.88.46:8000";
 
 const app = createApp(App)
 const store = createPinia()
 
 app.use(store)
+app.use(autoAnimatePlugin)
 app.use(router)
 app.use(VueApexCharts)
 

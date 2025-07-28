@@ -5,10 +5,10 @@
       @click.prevent="toggleDropdown"
     >
       <span class="mr-3 overflow-hidden rounded-full h-11 w-11">
-        <img src="/images/user/owner.jpg" alt="User" />
+        <img :src=" auth.profile.image ? `http://192.168.88.46:8000/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'"/>
       </span>
 
-      <span class="block mr-1 font-medium text-theme-sm">Musharof </span>
+      <span class="block mr-1 font-medium text-theme-sm">{{ auth.user.name }} </span>
 
       <ChevronDownIcon :class="{ 'rotate-180': dropdownOpen }" />
     </button>
@@ -20,10 +20,10 @@
     >
       <div>
         <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-          randomuser
+          {{ auth.user.last_name }}
         </span>
         <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-          randomuser@pimjo.com
+          {{ auth.user.email }}
         </span>
       </div>
 
@@ -42,7 +42,7 @@
           </router-link>
         </li>
       </ul>
-      <router-link
+      <button
         to="/signin"
         @click="signOut"
         class="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
@@ -51,7 +51,7 @@
           class="text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"
         />
         Sign out
-      </router-link>
+      </button>
     </div>
     <!-- Dropdown End -->
   </div>
@@ -61,10 +61,14 @@
 import { UserCircleIcon, ChevronDownIcon, LogoutIcon, SettingsIcon, InfoCircleIcon } from '@/icons'
 import { RouterLink } from 'vue-router'
 import { ref, onMounted, onUnmounted } from 'vue'
-import axios from 'axios'
+import { useAuthStore } from '@/storage/auth'
+import { useRouter } from 'vue-router'
 
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
+
+const router = useRouter()
+const auth = useAuthStore()
 
 const menuItems = [
   { href: '/profile', icon: UserCircleIcon, text: 'Edit profile' },
@@ -80,9 +84,10 @@ const closeDropdown = () => {
   dropdownOpen.value = false
 }
 
-const signOut = () => {
-  // Implement sign out logic here
-  console.log('Signing out...')
+const signOut = async () => {
+  
+  let response = await auth.logout()
+  router.push('/signin')
   closeDropdown()
 }
 
