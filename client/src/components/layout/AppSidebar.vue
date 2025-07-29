@@ -233,6 +233,8 @@ import {
 import SidebarWidget from "./SidebarWidget.vue";
 import BoxCubeIcon from "@/icons/BoxCubeIcon.vue";
 import { useSidebar } from "@/composables/useSidebar";
+import ArchiveIcon from "../../icons/ArchiveIcon.vue";
+import SupportIcon from "../../icons/SupportIcon.vue";
 
 const route = useRoute();
 
@@ -257,7 +259,16 @@ const menuGroups = [
         name: "User Profile",
         path: "/profile",
       },
-
+      {
+        icon: ArchiveIcon,
+        name: "LPSP credentials",
+        path: "/credentials",
+      },
+      {
+        icon: SupportIcon,
+        name: "Clients",
+        path: "/clients",
+      },
       {
         name: "Forms",
         icon: ListIcon,

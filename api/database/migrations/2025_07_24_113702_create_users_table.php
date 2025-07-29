@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Support\Facades\Hash;
 return new class extends Migration
 {
     /**
@@ -40,7 +40,7 @@ return new class extends Migration
         });
 
         DB::table('users')->insert([
-            ['name' => 'Root', 'last_name' => '...', 'email' => 'admin@test.com', 'password' => bcrypt('password'), 'permission' => 1],
+            ['name' => 'Root', 'last_name' => '...', 'email' => 'admin@test.com', 'password' => Hash::make("password"), 'permission' => 1],
         ]);
     }
 

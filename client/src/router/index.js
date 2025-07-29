@@ -35,6 +35,24 @@ const router = createRouter({
       },
     },
     {
+      path: '/credentials',
+      name: 'Credentials',
+      component: () => import('../views/Admin/LPSP.vue'),
+      meta: {
+        title: 'Credentials',
+        requireAuth: true
+      },
+    },
+    {
+      path: '/clients',
+      name: 'Clients',
+      component: () => import('../views/Pages/Clients.vue'),
+      meta: {
+        title: 'Clients',
+        requireAuth: true
+      },
+    },
+    {
       path: '/form-elements',
       name: 'Form Elements',
       component: () => import('../views/Forms/FormElements.vue'),

@@ -29,7 +29,7 @@
               class="cursor-pointer w-20 h-20 opacity-0 absolute"
               ref="fileInput"
             />
-            <img :src=" auth.profile.image ? `http://192.168.88.46:8000/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'" />
+            <img :src=" auth.profile.image ? `http://192.168.88.44:8000/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'" />
           </div>
           <div class="order-3 xl:order-2">
             <h4
@@ -252,7 +252,7 @@
                     <label
                       class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
                     >
-                      First Name
+                      First Name <span class="text-error-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -265,7 +265,7 @@
                     <label
                       class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
                     >
-                      Last Name
+                      Last Name <span class="text-error-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -278,7 +278,7 @@
                     <label
                       class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
                     >
-                      Email Address
+                      Email Address <span class="text-error-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -291,7 +291,7 @@
                     <label
                       class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
                     >
-                      Phone
+                      Phone <span class="text-error-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -324,7 +324,7 @@
                     <label
                       class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
                     >
-                      Country
+                      Country <span class="text-error-500">*</span>
                     </label>
                     <input
                       type="text"

@@ -39,7 +39,7 @@
 
             <div>
               <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Permission</p>
-              <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ auth.profile.permission }}</p>
+              <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ auth.user.permission == 1 ? "Office" : auth.user.permission == 2 ? "Quality Control" : "Foreman" }}</p>
             </div>
           </div>
         </div>

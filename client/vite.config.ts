@@ -6,6 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import Components from 'unplugin-vue-components/vite'
 import MotionResolver from 'motion-v/resolver'
 
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -24,7 +25,7 @@ export default defineConfig({
     },
   },
   server: {
-    host: '192.168.88.46',
+    host: '192.168.88.44',
     port: 5173,
   },
 })

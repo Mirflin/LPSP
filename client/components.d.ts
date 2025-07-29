@@ -20,6 +20,7 @@ declare module 'vue' {
     BasicTableOne: typeof import('./src/components/tables/basic-tables/BasicTableOne.vue')['default']
     Button: typeof import('./src/components/ui/Button.vue')['default']
     CheckboxInput: typeof import('./src/components/forms/FormElements/CheckboxInput.vue')['default']
+    ClientTable: typeof import('./src/components/tables/client-table/ClientTable.vue')['default']
     CommonGridShape: typeof import('./src/components/common/CommonGridShape.vue')['default']
     ComponentCard: typeof import('./src/components/common/ComponentCard.vue')['default']
     CountDown: typeof import('./src/components/common/CountDown.vue')['default']
