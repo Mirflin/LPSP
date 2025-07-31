@@ -6,6 +6,8 @@ use App\Http\Controllers\ProfilesController;
 use App\Http\Controllers\LPSPcreds;
 use App\Http\Controllers\ClientController;
 
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -28,6 +30,9 @@ Route::patch('/credentials', [LPSPcreds::class, 'updateCredentials'])
 Route::get('/clients', [ClientController::class, 'getClients'])
     ->middleware('auth:sanctum')
     ->name('clients.get');
-Route::post('/clients', [ClientController::class, 'getClientsWithParams'])
+Route::post('/clients', [ClientController::class, 'createClient'])
     ->middleware('auth:sanctum')
-    ->name('clients.get.params');
+    ->name('clients.create');
+Route::delete('/clients/{id}', [ClientController::class, 'deleteClient'])
+    ->middleware('auth:sanctum')
+    ->name('clients.delete');

@@ -1,12 +1,12 @@
 import { defineStore } from "pinia";
 import {ref, computed, reactive} from 'vue';
-
+import echo from "@/Echo.js"
 import axios from 'axios';
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref()
     const profile = ref({})
-
+    const echoInstance = ref()
     const authenticated = ref(false)
     const isAuthResolved = ref(false)
 
@@ -16,7 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
         try{
             await axios.post('/login', credentials)
             await attempt()
-
+            
             return null
         } catch(error){
             return "Invalid Credentials"
@@ -54,7 +54,7 @@ export const useAuthStore = defineStore('auth', () => {
         try{
             const response = await axios.get('/api/user')
             user.value = response.data
-            
+
             authenticated.value = true
         } catch(error){
             user.value = {}

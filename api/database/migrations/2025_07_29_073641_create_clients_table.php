@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('pvn_nr')->nullable();
             $table->string('bank')->nullable();
             $table->string('iban')->nullable();
-            $table->date('payment_term');
+            $table->integer('payment_term');
             $table->string('email')->nullable()->uniqiue();
             $table->timestamps();
             $table->softDeletes();

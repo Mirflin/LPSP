@@ -5,6 +5,7 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'jsvectormap/dist/jsvectormap.css'
 import 'flatpickr/dist/flatpickr.css'
+import "./Echo.js"
 
 import { createApp } from 'vue'
 import App from './App.vue'
@@ -17,7 +18,7 @@ import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
-axios.defaults.baseURL = "http://192.168.88.44:8000";
+axios.defaults.baseURL = "http://192.168.88.48:8000";
 
 const app = createApp(App)
 const store = createPinia()
