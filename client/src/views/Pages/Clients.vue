@@ -31,6 +31,7 @@ const form = reactive({
 const alert_type = ref(null)
 const alert_message = ref(null)
 const auth = useAuthStore()
+let pusher = new window.Pusher('611326fe66f2a0b70a5b', {cluster: 'eu'})
 
 watch(() => clientsStore.clients, (newClients) => {
   rows.value = toRaw(newClients)
@@ -55,12 +56,18 @@ const cols = [
 
 onMounted(async () => {
   fetch()
-  window.Echo.private('private-client-channel').listen('.client', (e) => {
+  window.Echo.private('clients').listen('new_client', (e) => {
     console.log(e)
   })
+
+  let privateChannel = pusher.subscribe('clients')
+  privateChannel.bind('new_client', function(data) {
+    console.log(JSON.stringify(data));
+  });
+  
 })
 onUnmounted(() => {
-
+  window.Echo.leave('clients')
 })
 
 const fetch = async () => {

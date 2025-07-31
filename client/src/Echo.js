@@ -8,14 +8,12 @@ axios.defaults.withXSRFToken = true;
 axios.defaults.baseURL = "http://192.168.88.48:8000";
 
 window.Pusher = Pusher;
-
 window.Echo = new Echo({
   broadcaster: "pusher",
   key: "611326fe66f2a0b70a5b",
   cluster: "eu",
-  forceTLS: false, // or true, depending on your setup
+  forceTLS: false,
   withCredentials: true,
-  authEndpoint: "http://192.168.88.48:8000/api/broadcasting/auth",
   authorizer: (channel, options) => {
     return {
       authorize: (socketId, callback) => {

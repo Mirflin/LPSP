@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 class ClientFetch implements ShouldBroadcast
 {
-    use SerializesModels, InteractsWithSockets;
+    use SerializesModels, InteractsWithSockets, Dispatchable;
 
     public $client;
 
@@ -23,11 +23,16 @@ class ClientFetch implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new PrivateChannel('client-channel');
+        return new PrivateChannel('clients');
     }
-
-    public function broadcastAs()
+    public function broadcastAs(){
+        return 'new_client';
+    }
+    public function broadcastWith()
     {
-        return 'client';
+        return [
+            'id' => $this->client->id,
+            'name' => $this->client->name,
+        ];
     }
 }
