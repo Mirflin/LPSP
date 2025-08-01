@@ -26,13 +26,6 @@ class ClientFetch implements ShouldBroadcast
         return new PrivateChannel('clients');
     }
     public function broadcastAs(){
-        return 'new_client';
-    }
-    public function broadcastWith()
-    {
-        return [
-            'id' => $this->client->id,
-            'name' => $this->client->name,
-        ];
+        return 'newclient';
     }
 }

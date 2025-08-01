@@ -180,6 +180,33 @@ const router = createRouter({
         guest: true
       },
     },
+    {
+      path: '/product',
+      name: 'Product',
+      component: () => import('../views/Production/Product.vue'),
+      meta: {
+        title: 'Product',
+        requireAuth: true
+      },
+    },
+    {
+      path: '/plan',
+      name: 'Plan',
+      component: () => import('../views/Production/Plan.vue'),
+      meta: {
+        title: 'Plan',
+        requireAuth: true
+      },
+    },
+    {
+      path: '/materials',
+      name: 'Materials',
+      component: () => import('../views/Production/Materials.vue'),
+      meta: {
+        title: 'Materials',
+        requireAuth: true
+      },
+    },
   ],
 })
 

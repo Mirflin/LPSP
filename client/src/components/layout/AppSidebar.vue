@@ -235,6 +235,9 @@ import BoxCubeIcon from "@/icons/BoxCubeIcon.vue";
 import { useSidebar } from "@/composables/useSidebar";
 import ArchiveIcon from "../../icons/ArchiveIcon.vue";
 import SupportIcon from "../../icons/SupportIcon.vue";
+import SettingsIcon from "@/icons/SettingsIcon.vue";
+import { Paperclip } from "lucide-vue-next";
+import PaperclipIcon from "@/icons/PaperclipIcon.vue";
 
 const route = useRoute();
 
@@ -255,12 +258,21 @@ const menuGroups = [
         path: "/calendar",
       },
       {
+        name: "Production",
+        icon: PaperclipIcon,
+        subItems: [
+          { name: "Plan", path: "/plan", pro: false },
+          { name: "Product", path: "/product", pro: false },
+          { name: "Materials", path: "/materials", pro: false },
+        ],
+      },
+      {
         icon: UserCircleIcon,
         name: "User Profile",
         path: "/profile",
       },
       {
-        icon: ArchiveIcon,
+        icon: SettingsIcon,
         name: "LPSP credentials",
         path: "/credentials",
       },

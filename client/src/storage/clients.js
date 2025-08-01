@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import {ref, computed, reactive} from 'vue';
+import {ref, computed, reactive, toRaw} from 'vue';
 
 import axios from 'axios';
 
@@ -20,10 +20,10 @@ export const useClientsStore = defineStore('clients', () => {
 
     const createClient = async (form) => {
         try { 
-            const response = await axios.post('/api/clients', form);
-            return null;
+            const response = await axios.post('/api/clients', form)
+            console.log(response)
+            return null
         } catch (error) {
-            console.log(error);
             return error
         }
     }
@@ -31,11 +31,20 @@ export const useClientsStore = defineStore('clients', () => {
     const deleteClients = async (rows) => {
         try {
            for (const row of rows) {
-                const response = await axios.delete(`/api/clients/${row.id}`);
+                const response = await axios.delete(`/api/clients/${row.id}`)
            }
            return null
         } catch (error) {
-            return error;
+            return error
+        }
+    }
+
+    const updateClient = async (form) => {
+        try{
+            const response = await axios.patch('/api/clients', form)
+            return null
+        }catch(error){
+            return error
         }
     }
 
@@ -43,6 +52,7 @@ export const useClientsStore = defineStore('clients', () => {
         clients,
         fetchClients,
         createClient,
+        updateClient,
         deleteClients
     }
 })

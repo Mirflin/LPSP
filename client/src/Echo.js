@@ -12,7 +12,7 @@ window.Echo = new Echo({
   broadcaster: "pusher",
   key: "611326fe66f2a0b70a5b",
   cluster: "eu",
-  forceTLS: false,
+  forceTLS: true,
   withCredentials: true,
   authorizer: (channel, options) => {
     return {

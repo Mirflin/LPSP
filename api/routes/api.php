@@ -36,3 +36,6 @@ Route::post('/clients', [ClientController::class, 'createClient'])
 Route::delete('/clients/{id}', [ClientController::class, 'deleteClient'])
     ->middleware('auth:sanctum')
     ->name('clients.delete');
+Route::patch('/clients', [ClientController::class, 'updateClient'])
+    ->middleware('auth:sanctum')
+    ->name('clients.update');

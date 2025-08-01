@@ -30,6 +30,7 @@
     "clsx": "^2.1.1",
     "components": "^0.1.0",
     "dropzone": "^6.0.0-beta.2",
+    "export-from-json": "^1.7.4",
     "flatpickr": "^4.6.13",
     "jsvectormap": "^1.6.0",
     "lucide-vue-next": "^0.474.0",

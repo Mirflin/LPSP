@@ -22,9 +22,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Archive } from 'lucide-vue-next'
 import ArchiveIcon from '@/icons/ArchiveIcon.vue'
+import { excelParser } from "@/lib/excel-parser";
 
 const clientsStore = useClientsStore()
-const emit = defineEmits(['refresh', 'create', 'delete']);
+const emit = defineEmits(['refresh', 'create', 'delete','update']);
 const props = defineProps(["cols", "rows"])
 
 const alert_type = ref('')
@@ -135,6 +136,8 @@ const exportTable = (type) => {
             winPrint.close()
         };
         winPrint.print()
+    } else if(type === "excel"){
+         excelParser().exportDataFromJSON(rows, null, null);
     }
 };
 
@@ -182,6 +185,10 @@ const deleteRecords = async () => {
     }
 }
 
+const rowClick = async (e) => {
+    emit('update', toRaw(e))
+}
+
 </script>
 
 <template>
@@ -194,7 +201,7 @@ const deleteRecords = async () => {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                This action cannot be undone. This will permanently put client
+                This action cannot be undone. This will put client
                 account into suspended account folder and if not reverted, never be used.
                 </AlertDialogDescription>
             </AlertDialogHeader>
@@ -257,8 +264,6 @@ const deleteRecords = async () => {
                 </button>
               </div>
               <button class="m-4 flex items-center gap-4">
-                <ArchiveIcon @click="$emit('archive')" class="w-9 h-auto text-gray-500 hover:text-gray-700 transition" />
-
                 <TrashIcon @click="showAlert" class="w-9 h-auto text-gray-500 hover:text-gray-700 transition" />
 
                 <PlusIcon @click="$emit('create')" class="w-9 h-auto  text-green-500 hover:text-green-700 transition" />
@@ -280,7 +285,8 @@ const deleteRecords = async () => {
             :stickyHeader="true"
             height="450px"
             skin="bh-table-compact "
-            :cellClass="'text-sm text-gray-800 dark:text-gray-300 text-center'"
+            :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer'"
+            @rowClick="rowClick"
             @sortChange="changeServer"
         >
           <template #email="data">
