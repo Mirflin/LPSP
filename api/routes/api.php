@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfilesController;
 use App\Http\Controllers\LPSPcreds;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ProductionController;
+use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
@@ -39,3 +41,21 @@ Route::delete('/clients/{id}', [ClientController::class, 'deleteClient'])
 Route::patch('/clients', [ClientController::class, 'updateClient'])
     ->middleware('auth:sanctum')
     ->name('clients.update');
+
+Route::get('/production', [ProductionController::class, 'getProductionData'])
+    ->middleware('auth:sanctum')
+    ->name('production.material.get');
+
+Route::post('/material-create', [ProductionController::class, 'createMaterial'])
+    ->middleware('auth:sanctum')
+    ->name('production.material.create');
+Route::patch('/material-update', [ProductionController::class, 'updateMaterial'])
+    ->middleware('auth:sanctum')
+    ->name('production.material.update');
+Route::delete('/material/{id}', [ProductionController::class, 'deleteMaterial'])
+    ->middleware('auth:sanctum')
+    ->name('production.material.delete');
+
+Route::delete('/product/{id}', [ProductionController::class, 'deleteProduct'])
+    ->middleware('auth:sanctum')
+    ->name('production.product.delete');

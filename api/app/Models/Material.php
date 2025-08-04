@@ -12,9 +12,4 @@ class Material extends Model
         'name',
         'description',
     ];
-
-    public function productLists()
-    {
-        return $this->hasMany(ProductList::class);
-    }
 }

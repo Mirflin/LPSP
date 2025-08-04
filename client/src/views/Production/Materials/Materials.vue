@@ -1,17 +1,15 @@
 <script setup>
-import AdminLayout from '../../components/layout/AdminLayout.vue'
+import AdminLayout from '../../../components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
-import ClientTable from '@/components/tables/client-table/ClientTable.vue'
+import MaterialTable from './MaterialTable.vue'
 import { onMounted, onUnmounted, reactive, ref, computed, toRaw, watch } from 'vue'
-import flatPickr from 'vue-flatpickr-component'
-import 'flatpickr/dist/flatpickr.css'
 import moment from 'moment'
-import { useAuthStore } from '../../storage/auth'
-import {useProductionStore} from '../../storage/production'
+import { useAuthStore } from '../../../storage/auth'
+import {useProductionStore} from '../../../storage/production'
 
 const production = useProductionStore()
 const loading = ref(true)
-const rows = ref(production.materials ? toRaw(production.materials) : [])
+const rows = ref()
 const createModal = ref(false)
 const form = reactive({
   name: '',
@@ -24,7 +22,9 @@ const auth = useAuthStore()
 const cols = [
   { field: 'id', title: 'ID', isUnique: true, hide: false },
   { field: 'name', title: 'Name', hide: false },
-  {field: 'description', title: 'Name', hide: false}
+  {field: 'description', title: 'Description', hide: false},
+  { field: 'updated_at', title: 'Updated at', hide: true },
+  { field: 'created_at', title: 'Created at', hide: true },
 ]
 
 const fetch = async () => {
@@ -37,6 +37,8 @@ const fetch = async () => {
 
 onMounted(() => {
     fetch()
+    rows.value = production.materials
+    console.log(rows.value)
 })
 
 const updating = ref(false)
@@ -79,7 +81,7 @@ const createMaterial = async () => {
 
 const updateForm = async(material) => {
   updating.value = true
-  if(client){
+  if(material){
     form.id = material.id
     form.name = material.name
     createModal.value = true
@@ -94,7 +96,7 @@ const updateForm = async(material) => {
 }
 
 const row_delete = async (rows) => {
-  const response = await production.deleteMaterial(rows)
+  const response = await production.deleteMaterials(rows)
   if(!response) {
     alert_type.value = "success"
     alert_message.value = "Material(s) deleted successfully!"
@@ -156,7 +158,7 @@ const currentPageTitle = 'Materials'
               </h4>
             </div>
             <form class="flex flex-col" @submit="saveProfile" @submit.prevent>
-              <div class="custom-scrollbar h-[458px] overflow-y-auto p-2">
+              <div class="custom-scrollbar h-auto overflow-y-auto p-2">
                 <div>
                   <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                     General Information
@@ -212,7 +214,7 @@ const currentPageTitle = 'Materials'
         </template>
       </Modal>
 
-      <ClientTable @delete="row_delete" @create="createModal = true" @update="updateForm" @refresh="fetch" :cols="cols" :rows="rows" v-if="!loading" />
+      <MaterialTable @delete="row_delete" @create="createModal = true" @update="updateForm" @refresh="fetch" :cols="cols" :rows="rows" v-if="!loading" />
       <div 
           v-else
           class="flex justify-center items-center"

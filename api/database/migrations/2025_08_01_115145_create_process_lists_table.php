@@ -17,7 +17,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('process_list')->insert([
+        DB::table('process_lists')->insert([
             ['name' => 'Sheet Laser'],
             ['name' => 'Tube Laser'],
             ['name' => 'Outsourcing'],

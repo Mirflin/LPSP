@@ -1,5 +1,9 @@
 <template>
   <admin-layout>
+    <TimedAlert
+      :type="alert_type"
+      :message="alert_message"
+    />
     <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div
       v-if="!loading"
@@ -29,6 +33,7 @@
 import AdminLayout from '../../components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import { onMounted, ref } from 'vue'
+import TimedAlert from '@/components/TimedAlert.vue'
 import ProfileCard from '../../components/profile/ProfileCard.vue'
 import PersonalInfoCard from '../../components/profile/PersonalInfoCard.vue'
 import AddressCard from '../../components/profile/AddressCard.vue'
@@ -38,6 +43,8 @@ import axios from 'axios'
 const auth = useAuthStore()
 const profile = ref({})
 const loading = ref(false)
+const alert_message = ref()
+const alert_type = ref()
 
 const permissionLevels = {}
 
@@ -48,6 +55,12 @@ const fetchProfile = async () => {
     auth.profile = profile.value
     profile.value.permission = auth.profile.permission
   } catch (error) {
+    alert_message.value = "Click 'Edit' and complete your profile"
+    alert_type.value = "info"
+    setTimeout(() => {
+      alert_message.value = null
+      alert_type.value = null
+    },3000)
     console.error('Error fetching profile:', error)
   }
   loading.value = false

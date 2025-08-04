@@ -183,7 +183,7 @@ const router = createRouter({
     {
       path: '/product',
       name: 'Product',
-      component: () => import('../views/Production/Product.vue'),
+      component: () => import('../views/Production/Products/Product.vue'),
       meta: {
         title: 'Product',
         requireAuth: true
@@ -201,9 +201,18 @@ const router = createRouter({
     {
       path: '/materials',
       name: 'Materials',
-      component: () => import('../views/Production/Materials.vue'),
+      component: () => import('../views/Production/Materials/Materials.vue'),
       meta: {
         title: 'Materials',
+        requireAuth: true
+      },
+    },
+    {
+      path: '/product/:id',
+      name: 'ProductView',
+      component: () => import('../views/Production/Products/ProductView.vue'),
+      meta: {
+        title: 'ProductView',
         requireAuth: true
       },
     },

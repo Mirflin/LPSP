@@ -23,6 +23,10 @@ return new class extends Migration
             $table->string('iban');
             $table->timestamps();
         });
+
+        DB::table('lpsp_credentials')->insert([
+            ['name' => 'LPSP', 'address' => '...', 'bank' => '...', 'export_address' => '...', 'phone' => '...', 'registration_nr' => '...', 'vat_nr' => '...', 'iban' => '...']
+        ]);
     }
 
     /**

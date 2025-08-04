@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('process_id');
             $table->foreign("product_id")->references("id")->on("products")->onDelete("cascade");
-            $table->foreign("process_id")->references("id")->on("process_list")->onDelete("cascade");
+            $table->foreign("process_id")->references("id")->on("process_lists")->onDelete("cascade");
             $table->timestamps();
         });
     }

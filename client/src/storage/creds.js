@@ -9,8 +9,11 @@ export const useCredsStore = defineStore('creds', () => {
     const fetchCreds = async () => {
         try {
             const response = await axios.get('/api/credentials');
-            creds.value = response.data;
+            if(response.data){
+                creds.value = response.data;
+            }
         } catch (error) {
+            creds.value = []
             console.error("Failed to fetch credentials:", error);
         }
     }

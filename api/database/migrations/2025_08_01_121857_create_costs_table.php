@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('costs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('process_id');
-            $table->floatval('cost');
-            $table->floatval('additional_cost');
-            $table->foreign("process_id")->references("id")->on("process_list")->onDelete("cascade");
+            $table->float('cost');
+            $table->float('additional_cost');
+            $table->foreign("process_id")->references("id")->on("process_lists")->onDelete("cascade");
             $table->timestamps();
         });
     }

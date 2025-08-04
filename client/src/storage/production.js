@@ -15,7 +15,48 @@ export const useProductionStore = defineStore('production', () => {
             plans.value = response.data.plans;
             materials.value = response.data.materials;
         } catch (error) {
-            console.error("Failed to fetch production data:", error);
+            return error
+        }
+    }
+
+
+    const deleteProducts = async (rows) => {
+        try {
+            for (const row of rows) {
+                const response = await axios.delete(`/api/products/${row.id}`)
+            }
+            return null
+        } catch(error) {
+            return error
+        }
+    }
+
+    const createMaterial = async (form) => {
+        try {
+            const response = await axios.post('/api/material-create', form)
+            return null
+        } catch(error) {
+            return error
+        }
+    }
+
+    const updateMaterial = async (form) => {
+        try {
+            const response = await axios.patch('/api/material-update', form)
+            return null
+        } catch(error) {
+            return error
+        }
+    }
+
+    const deleteMaterials = async (rows) => {
+        try {
+            for (const row of rows) {
+                const response = await axios.delete(`/api/material/${row.id}`)
+            }
+            return null
+        } catch(error) {
+            return error
         }
     }
 
@@ -23,6 +64,9 @@ export const useProductionStore = defineStore('production', () => {
         products,
         plans,
         materials,
+        createMaterial,
+        updateMaterial,
+        deleteMaterials,
         fetch,
     }
 })
