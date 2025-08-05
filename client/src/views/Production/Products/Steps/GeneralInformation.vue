@@ -1,41 +1,73 @@
 <script setup>
-import { Button } from '@/components/ui/button'
-import Multiselect from 'vue-multiselect'
 import {useProductionStore} from "@/storage/production.js"
 import { onMounted, reactive ,ref, toRaw} from 'vue'
-
-const props = defineProps(['step'])
-const emit = defineEmits(['next', 'back'])
-
+import Multiselect from 'vue-multiselect'
+const props = defineProps(['step', 'stepInfo', 'form'])
+const emit = defineEmits(['update', 'cancel', 'next'])
+const loading = ref(false)
 const production = useProductionStore()
 
-const options = ref([])
-onMounted(() => {
-    production.fetch()
-    options.value = production.materials
+let options = []
+onMounted(async() => {
+    loading.value = true
+    await production.fetch()
+    options = production.materials
+    loading.value = false
 })
-const selected = ref(null)
+const alert_message = ref()
+const alert_type = ref()
 
-const addTag = (newTag) => {
-    selected.push(newTag)
-    console.log(selected)
+const general_form = ref({
+    "drawing_nr": "",
+    "part_nr": "",
+    "revision": "",
+    "description": "",
+    "additional_info": "",
+    "weight": "",
+    "materials": "",
+    "processes": "",
+})
+
+const next = () => {
+    if(!general_form.value.drawing_nr || !general_form.value.part_nr || !general_form.value.materials){
+        alert_message.value = "Please fill all required fields!"
+        alert_type.value = "error"
+        setTimeout(() => {
+            alert_message.value = null
+            alert_type.value = null
+        }, 3000)
+    }else{
+        emit('next')
+        emit('update', general_form)
+    }
 }
+
+general_form.value = Object.keys(general_form.value).reduce((acc, key) => ({
+        ...acc,
+        [key]: (props.form.hasOwnProperty(key) && props.form[key] != "") ? props.form[key] : acc[key]
+    }), general_form.value)
+
 </script>
 
 <template>
-    <div class="rounded-2xl border border-gray-200 bg-white h-auto p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+    <TimedAlert
+        :type="alert_type"
+        :message="alert_message"
+    />
+    <div v-if="!loading" class="rounded-2xl border border-gray-200 bg-white h-auto p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <div class="mb-5 text-2xl">
             General information
         </div>
-        <form class="flex-col gap-5 items-center justify-center" @submit.prevent>
+        <div class="flex-col gap-5 items-center justify-center w-full h-170">
             <div class="flex-col gap-5 mb-5">
                 <div class="mb-5">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Drawing number
+                        Drawing number <span class="text-error-500">*</span>
                     </label>
                     <div class="relative">
                         <input
                             type="text"
+                            v-model="general_form.drawing_nr"
                             placeholder="34-294..."
                             class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-[62px] text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -48,11 +80,12 @@ const addTag = (newTag) => {
                 </div>
                 <div class="mb-5">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Part number
+                        Part number <span class="text-error-500">*</span>
                     </label>
                     <div class="relative">
                         <input
                             type="text"
+                            v-model="general_form.part_nr"
                             placeholder="74-193..."
                             class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-[62px] text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -70,6 +103,7 @@ const addTag = (newTag) => {
                     <div class="relative">
                         <input
                             type="text"
+                            v-model="general_form.revision"
                             placeholder="A,B,C..."
                             class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-[62px] text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -87,6 +121,7 @@ const addTag = (newTag) => {
                     <div class="relative">
                         <input
                             type="text"
+                            v-model="general_form.description"
                             placeholder="Description"
                             class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -99,6 +134,7 @@ const addTag = (newTag) => {
                     <div class="relative">
                         <input
                             type="text"
+                            v-model="general_form.additional_info"
                             placeholder="Additional information"
                             class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -111,6 +147,7 @@ const addTag = (newTag) => {
                     <div class="relative">
                         <input
                             type="text"
+                            v-model="general_form.weight"
                             placeholder="Weight"
                             class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -118,18 +155,42 @@ const addTag = (newTag) => {
                 </div>
                 <div class="mb-5">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Materials
+                        Materials <span class="text-error-500">*</span>
                     </label>
                     <div class="relative">
-                        <Multiselect v-model="selected" tag-placeholder="Add this as new material" placeholder="Search or add a material" label="name" track-by="code" :options="options" :multiple="true" :taggable="true" @tag="addTag"></Multiselect>
+                        <multiselect id="multiselect" v-model="general_form.materials" :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false"
+                            :preserve-search="true" placeholder="Pick some" label="name" track-by="name" :preselect-first="false"
+                        >
+                            <template #selection="{ values, search, isOpen }">
+                                <span class="multiselect__single"
+                                    v-if="values.length"
+                                    v-show="!isOpen"
+                                >
+                                    <span v-for="value in values">{{ value.name + " "}}</span> option(s) selected
+                                </span>
+                            </template>
+                        </multiselect>
                     </div>
                 </div>
             </div>
-            <div class="flex gap-5 justify-between items-center">
-                <Button @click="emit('back')" :disabled="props.step == 0">Back</Button>
-                {{ props.step + 1 }}
-                <Button @click="emit('next')">Next</Button>
+            <div class="mt-5 flex justify-between">
+                <Button @click="emit('cancel')">Cancel</Button>
+                <div class="text-xl">
+                    {{ props.stepInfo[props.step] }}
+                </div>
+                <Button @click="next" :disabled="props.stepInfo[props.step+1] == null">Next</Button>
             </div>
-        </form>
+        </div>
+    </div>
+    <div 
+        v-else
+        class="flex justify-center items-center"
+    >
+        <div class="w-20 h-20 border-4 border-transparent text-blue-400 text-4xl animate-spin flex items-center justify-center border-t-blue-400 rounded-full">
+            <div class="w-16 h-16 border-4 border-transparent text-red-400 text-2xl animate-spin flex items-center justify-center border-t-red-400 rounded-full">
+            </div>
+        </div>
     </div>
 </template>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>

@@ -5,7 +5,7 @@
       @click.prevent="toggleDropdown"
     >
       <span class="mr-3 overflow-hidden rounded-full h-11 w-11">
-        <img :src=" auth.profile.image ? `http://192.168.88.42:8000/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'"/>
+        <img :src=" auth.profile.image ? `http://192.168.88.45:8000/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'"/>
       </span>
 
       <span class="block mr-1 font-medium text-theme-sm">{{ auth.user.name }} </span>

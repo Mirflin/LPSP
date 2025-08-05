@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Material;
 use App\Models\Plan;
 use App\Models\Product;
+use App\Models\Process_list;
 use Illuminate\Support\Facades\Log;
 
 class ProductionController extends Controller
@@ -18,7 +19,7 @@ class ProductionController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'max:255',
         ]);
 
         Material::create($validated);
@@ -54,8 +55,10 @@ class ProductionController extends Controller
         $materials = Material::all();
         $plans = Plan::all();
         $products = Product::all();
+        $process = Process_list::all();
 
-        return response()->json(['message' => 'data fetched!', 'materials' => $materials, 'plans' => $plans, 'products' => $products], 200);
+
+        return response()->json(['message' => 'data fetched!', 'materials' => $materials, 'plans' => $plans, 'products' => $products, 'processes' => $process], 200);
     }
 
     public function deleteMaterial($id){

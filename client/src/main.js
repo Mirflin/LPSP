@@ -14,17 +14,19 @@ import VueApexCharts from 'vue3-apexcharts'
 import axios from 'axios'
 import {createPinia} from 'pinia'
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
+import Vueform from '@vueform/vueform'
+import vueformConfig from './../vueform.config'
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
-axios.defaults.baseURL = "http://192.168.88.42:8000";
+axios.defaults.baseURL = "http://192.168.88.45:8000";
 
 const app = createApp(App)
 const store = createPinia()
 
 app.use(store)
-
+app.use(Vueform, vueformConfig)
 app.use(autoAnimatePlugin)
 app.use(router)
 app.use(VueApexCharts)

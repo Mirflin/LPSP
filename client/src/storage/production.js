@@ -7,6 +7,7 @@ export const useProductionStore = defineStore('production', () => {
     const products = ref()
     const plans = ref()
     const materials = ref()
+    const processes = ref()
 
     const fetch = async () => {
         try {
@@ -14,6 +15,7 @@ export const useProductionStore = defineStore('production', () => {
             products.value = response.data.products;
             plans.value = response.data.plans;
             materials.value = response.data.materials;
+            processes.value = response.data.processes
         } catch (error) {
             return error
         }
@@ -64,6 +66,7 @@ export const useProductionStore = defineStore('production', () => {
         products,
         plans,
         materials,
+        processes,
         createMaterial,
         updateMaterial,
         deleteMaterials,
