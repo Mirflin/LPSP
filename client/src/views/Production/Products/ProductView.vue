@@ -1,37 +1,40 @@
 <script setup>
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useRoute } from 'vue-router'
-import {reactive, ref, shallowRef, watch} from 'vue'
+import {onMounted, reactive, ref, shallowRef, watch} from 'vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import { BookUser, Check, CreditCard, Truck } from "lucide-vue-next"
 import { Stepper, StepperDescription, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from "@/components/ui/stepper"
 import { Button } from '@/components/ui/button'
 import GeneralInformation from './Steps/GeneralInformation.vue'
 import ProcessesInformation from './Steps/ProcessesInformation.vue'
-import PriceInformation from './Steps/PriceInformation.vue'
+import FilesInformation from './Steps/FilesInformation.vue'
 import { useRouter } from 'vue-router'
+import {useProductionStore} from "@/storage/production.js"
+import {useClientsStore} from "@/storage/clients.js"
+
+const production = useProductionStore()
+const clients = useClientsStore()
 
 const route = useRoute()
 const product_id = ref(route.params.id)
-const step = ref(0)
+const step = ref(2)
 const router = useRouter()
 const componentMap = [
     GeneralInformation,
     ProcessesInformation,
-    PriceInformation
+    FilesInformation,
 ]
 
 const selectedComponent = shallowRef(componentMap[step.value])
-const stepInfo = ["General info", "Processes", "Price", "Files", "Finalize"]
-const form = ref({
-    "drawing_nr": "",
-    "part_nr": "",
-    "revision": "",
-    "description": "",
-    "additional_info": "",
-    "weight": "",
-    "materials": "",
-    "processes": "",
+const stepInfo = ["General info", "Processes", "Files", "Files", "Finalize"]
+const loading = ref(false)
+
+onMounted(async() => {
+    loading.value = true
+    await production.fetch()
+    await clients.fetchClients()
+    loading.value = false
 })
 
 watch(step, () => {
@@ -42,20 +45,12 @@ const increase = () => {
     step.value = step.value + 1
 }
 
-const cancel = () => {
-    router.push("/product")
+const back = () => {
+    step.value = step.value - 1
 }
 
-const update = async(items) => {
-    form.value.drawing_nr = items.drawing_nr || form.value.drawing_nr
-    form.value. part_nr = items.part_nr || form.value.part_nr
-    form.value.revision = items.revision || form.value.revision
-    form.value.description = items.description || form.value.description
-    form.value.additional_info = items.additional_info || form.value.additional_info
-    form.value.weight = items.weight || form.value.weight
-    form.value.materials = items.materials || form.value.materials
-    form.value.processes = items.processes || form.value.processes
-    console.log(form.value)
+const cancel = () => {
+    router.push("/product")
 }
 
 const currentPageTitle = "Product #"+product_id.value
@@ -65,10 +60,20 @@ const currentPageTitle = "Product #"+product_id.value
     <AdminLayout>
         <PageBreadcrumb :pageTitle="currentPageTitle" />
         
-        <component :form="form" :stepInfo="stepInfo" :step="step" @update="update" @next="increase" @cancel="cancel" v-bind:is="selectedComponent"></component>
+        <component v-if="!loading" :stepInfo="stepInfo" :step="step" @next="increase" @back="back" @cancel="cancel" v-bind:is="selectedComponent"></component>
+        <div 
+            v-else
+            class="flex justify-center items-center"
+        >
+            <div class="w-20 h-20 border-4 border-transparent text-blue-400 text-4xl animate-spin flex items-center justify-center border-t-blue-400 rounded-full">
+                <div class="w-16 h-16 border-4 border-transparent text-red-400 text-2xl animate-spin flex items-center justify-center border-t-red-400 rounded-full">
+                </div>
+            </div>
+        </div>
 
-        <div class="flex gap-5 justify-between items-center mt-5 p-1">
-            <Button v-if="stepInfo[step+1] == null">Save</Button>
+        <div class="flex gap-5 justify-end items-center mt-5 p-1">
+            <Button @click="cancel" class="bg-red-600 hover:bg-red-500">Cancel</Button>
+            <Button :disabled="stepInfo[step+1] != null" class="bg-green-600">Save</Button>
         </div>
     </AdminLayout>
 </template>

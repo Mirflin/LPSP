@@ -2,34 +2,28 @@
 import {useProductionStore} from "@/storage/production.js"
 import { onMounted, reactive ,ref, toRaw} from 'vue'
 import Multiselect from 'vue-multiselect'
-const props = defineProps(['step', 'stepInfo', 'form'])
-const emit = defineEmits(['update', 'cancel', 'next'])
+import {useProductCreate} from "@/storage/product_create.js"
+import {useClientsStore} from "@/storage/clients.js"
+
+const props = defineProps(['step', 'stepInfo'])
+const emit = defineEmits(['update', 'cancel', 'next', 'back'])
 const loading = ref(false)
 const production = useProductionStore()
-
+const productStore = useProductCreate()
+const clients = useClientsStore()
+console.log(clients)
 let options = []
 onMounted(async() => {
     loading.value = true
-    await production.fetch()
     options = production.materials
     loading.value = false
 })
+
 const alert_message = ref()
 const alert_type = ref()
 
-const general_form = ref({
-    "drawing_nr": "",
-    "part_nr": "",
-    "revision": "",
-    "description": "",
-    "additional_info": "",
-    "weight": "",
-    "materials": "",
-    "processes": "",
-})
-
 const next = () => {
-    if(!general_form.value.drawing_nr || !general_form.value.part_nr || !general_form.value.materials){
+    if(!productStore.product.drawing_nr || !productStore.product.part_nr || !productStore.product.materials || !productStore.product.client){
         alert_message.value = "Please fill all required fields!"
         alert_type.value = "error"
         setTimeout(() => {
@@ -38,14 +32,8 @@ const next = () => {
         }, 3000)
     }else{
         emit('next')
-        emit('update', general_form)
     }
 }
-
-general_form.value = Object.keys(general_form.value).reduce((acc, key) => ({
-        ...acc,
-        [key]: (props.form.hasOwnProperty(key) && props.form[key] != "") ? props.form[key] : acc[key]
-    }), general_form.value)
 
 </script>
 
@@ -58,7 +46,7 @@ general_form.value = Object.keys(general_form.value).reduce((acc, key) => ({
         <div class="mb-5 text-2xl">
             General information
         </div>
-        <div class="flex-col gap-5 items-center justify-center w-full h-170">
+        <div class="flex-col gap-5 items-center justify-center w-full h-185">
             <div class="flex-col gap-5 mb-5">
                 <div class="mb-5">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -67,7 +55,7 @@ general_form.value = Object.keys(general_form.value).reduce((acc, key) => ({
                     <div class="relative">
                         <input
                             type="text"
-                            v-model="general_form.drawing_nr"
+                            v-model="productStore.product.drawing_nr"
                             placeholder="34-294..."
                             class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-[62px] text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -85,7 +73,7 @@ general_form.value = Object.keys(general_form.value).reduce((acc, key) => ({
                     <div class="relative">
                         <input
                             type="text"
-                            v-model="general_form.part_nr"
+                            v-model="productStore.product.part_nr"
                             placeholder="74-193..."
                             class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-[62px] text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -103,7 +91,7 @@ general_form.value = Object.keys(general_form.value).reduce((acc, key) => ({
                     <div class="relative">
                         <input
                             type="text"
-                            v-model="general_form.revision"
+                            v-model="productStore.product.revision"
                             placeholder="A,B,C..."
                             class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-[62px] text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -114,51 +102,13 @@ general_form.value = Object.keys(general_form.value).reduce((acc, key) => ({
                         </span>
                     </div>
                 </div>
-                <div class="mb-5">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Description
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="text"
-                            v-model="general_form.description"
-                            placeholder="Description"
-                            class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                        />
-                    </div>
-                </div>
-                <div class="mb-5">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Additional information
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="text"
-                            v-model="general_form.additional_info"
-                            placeholder="Additional information"
-                            class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                        />
-                    </div>
-                </div>
-                <div class="mb-5">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Weight
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="text"
-                            v-model="general_form.weight"
-                            placeholder="Weight"
-                            class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                        />
-                    </div>
-                </div>
+
                 <div class="mb-5">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         Materials <span class="text-error-500">*</span>
                     </label>
                     <div class="relative">
-                        <multiselect id="multiselect" v-model="general_form.materials" :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false"
+                        <multiselect id="multiselect" v-model="productStore.product.materials" :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false"
                             :preserve-search="true" placeholder="Pick some" label="name" track-by="name" :preselect-first="false"
                         >
                             <template #selection="{ values, search, isOpen }">
@@ -172,14 +122,68 @@ general_form.value = Object.keys(general_form.value).reduce((acc, key) => ({
                         </multiselect>
                     </div>
                 </div>
-            </div>
-            <div class="mt-5 flex justify-between">
-                <Button @click="emit('cancel')">Cancel</Button>
-                <div class="text-xl">
-                    {{ props.stepInfo[props.step] }}
+                <div class="mb-5">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Client <span class="text-error-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <multiselect 
+                            id="single-select-search" v-model="productStore.product.client" :options="clients.clients" placeholder="Select one" label="name" aria-label="pick a value" :close-on-select="true"
+                        >
+                        </multiselect>
+                    </div>
                 </div>
-                <Button @click="next" :disabled="props.stepInfo[props.step+1] == null">Next</Button>
+                <div class="mb-5">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Description
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            v-model="productStore.product.description"
+                            placeholder="Description"
+                            class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                        />
+                    </div>
+                </div>
+                <div class="mb-5">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Additional information
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            v-model="productStore.product.additional_info"
+                            placeholder="Additional information"
+                            class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                        />
+                    </div>
+                </div>
+                <div class="mb-5">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Weight
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            v-model="productStore.product.weight"
+                            placeholder="Weight"
+                            class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                        />
+                    </div>
+                </div>
             </div>
+        </div>
+        <div class="mt-5 flex justify-between">
+            <div>
+                <div class="flex gap-5">
+                    <Button @click="emit('back')" disabled>Back</Button>
+                </div>
+            </div>
+            <div class="text-xl">
+                {{ props.stepInfo[props.step] }}
+            </div>
+            <Button @click="next" :disabled="props.stepInfo[props.step+1] == null">Next</Button>
         </div>
     </div>
     <div 

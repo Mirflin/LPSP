@@ -35,7 +35,7 @@
         <span
           class="mx-auto mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400"
         >
-          Drag and drop your PNG, JPG, WebP, SVG images here or browse
+          Drag and drop your files here or browse
         </span>
 
         <span class="font-medium underline cursor-pointer text-theme-sm text-brand-500">
@@ -47,9 +47,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, defineModel } from 'vue'
 import Dropzone from 'dropzone'
 import 'dropzone/dist/dropzone.css'
+import { useProductCreate } from "@/storage/product_create.js"
 
 const props = defineProps({
   uploadUrl: {
@@ -58,6 +59,10 @@ const props = defineProps({
   },
 })
 
+const productStore = useProductCreate()
+
+const model = defineModel()
+let file_counter = 1
 const dropzoneForm = ref(null)
 const dropzoneId = `dropzone-${Math.random().toString(36).substr(2, 9)}`
 let dropzoneInstance = null
@@ -67,20 +72,21 @@ onMounted(() => {
 
   dropzoneInstance = new Dropzone(`#${dropzoneId}`, {
     url: props.uploadUrl,
+    previewsContainer: false,
     thumbnailWidth: 150,
     maxFilesize: 0.5,
+    autoProcessQueue: false,
     acceptedFiles: 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml',
     headers: { 'My-Awesome-Header': 'header value' },
     dictDefaultMessage: '',
     init: function () {
       this.on('addedfile', (file) => {
-        console.log('A file has been added', file)
+        const obj = {'id': file_counter, 'file': file}
+        file_counter += 1
+        productStore.product.files.push(obj)
       })
       this.on('success', (file, response) => {
         console.log('File successfully uploaded', file, response)
-      })
-      this.on('error', (file, error) => {
-        console.error('An error occurred during upload', file, error)
       })
     },
   })

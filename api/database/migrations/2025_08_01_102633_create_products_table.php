@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('revision');
             $table->string('description')->nullable();
             $table->string('additional_info')->nullable();
+            $table->unsignedBigInteger('client_id');
+            $table->foreign("client_id")->references("id")->on("clients")->onDelete("cascade");
             $table->string('weight');
             $table->timestamps();
         });
