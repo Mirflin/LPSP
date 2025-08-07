@@ -70,6 +70,7 @@ export const useProductionStore = defineStore('production', () => {
         createMaterial,
         updateMaterial,
         deleteMaterials,
+        deleteProducts,
         fetch,
     }
 })

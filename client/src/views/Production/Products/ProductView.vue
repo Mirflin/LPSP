@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import GeneralInformation from './Steps/GeneralInformation.vue'
 import ProcessesInformation from './Steps/ProcessesInformation.vue'
 import FilesInformation from './Steps/FilesInformation.vue'
+import ChildsInformation from './Steps/ChildsInformation.vue'
+import SummaryInformation from './Steps/SummaryInformation.vue'
 import { useRouter } from 'vue-router'
 import {useProductionStore} from "@/storage/production.js"
 import {useClientsStore} from "@/storage/clients.js"
@@ -18,16 +20,18 @@ const clients = useClientsStore()
 
 const route = useRoute()
 const product_id = ref(route.params.id)
-const step = ref(2)
+const step = ref(0)
 const router = useRouter()
 const componentMap = [
     GeneralInformation,
     ProcessesInformation,
     FilesInformation,
+    ChildsInformation,
+    SummaryInformation
 ]
 
 const selectedComponent = shallowRef(componentMap[step.value])
-const stepInfo = ["General info", "Processes", "Files", "Files", "Finalize"]
+const stepInfo = ["General info", "Processes", "Files", "Childs", "Summary"]
 const loading = ref(false)
 
 onMounted(async() => {
@@ -53,12 +57,10 @@ const cancel = () => {
     router.push("/product")
 }
 
-const currentPageTitle = "Product #"+product_id.value
 </script>
 
 <template>
     <AdminLayout>
-        <PageBreadcrumb :pageTitle="currentPageTitle" />
         
         <component v-if="!loading" :stepInfo="stepInfo" :step="step" @next="increase" @back="back" @cancel="cancel" v-bind:is="selectedComponent"></component>
         <div 

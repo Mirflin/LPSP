@@ -9,19 +9,31 @@ import Separator from "@/components/ui/separator/Separator.vue"
 import {useProductCreate} from "@/storage/product_create.js"
 import Dropzone from "@/components/forms/FormElements/Dropzone.vue"
 import FilesInput from "./FilesInput.vue"
+import ChildsInput from "./ChildsInput.vue"
 
+const production = useProductionStore()
 const props = defineProps(['step', 'stepInfo', 'form', 'back'])
 const emit = defineEmits(['update', 'cancel', 'next'])
 const loading = ref(false)
 const productStore = useProductCreate()
-
-const files = productStore.product.files
-
+const childs_counter = ref(productStore.product.childs.length)
 const alert_message = ref(null)
 const alert_type = ref(null)
 
 const next = () => {
     let pass = true
+    productStore.product.childs.forEach(child => {
+        if(child.children_product == '' || Object.is(child.children_product, null) || child.children_product == null){
+            console.log("err")
+            alert_message.value = 'Please fill all created child labels'
+            alert_type.value = 'error'
+            pass = false
+            setTimeout(() => {
+                alert_message.value = ''
+                alert_type.value = ''
+            }, 3000)
+        }
+    })
     if(pass){
         emit('next')
     }
@@ -31,6 +43,14 @@ const back = () => {
     emit('back')
 }
 
+const newChild = () => {
+    childs_counter.value += 1
+    productStore.product.childs.push({'id': childs_counter.value,'children_product': ''})
+}
+const deleteChild = () => {
+    childs_counter.value -= 1
+    productStore.product.childs.pop()
+}
 </script>
 
 <template>
@@ -39,23 +59,21 @@ const back = () => {
             :type="alert_type"
             :message="alert_message"
         />
-        <div v-if="!loading" class="rounded-2xl border border-gray-200 bg-white h-auto p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6" v-auto-animate>
+        <div v-if="!loading" class="rounded-2xl border border-gray-200 bg-white h-auto p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
             <div class="flex justify-between">
                 <div class="mb-5 text-2xl">
-                    Files
+                    Child products
+                </div>
+                <div class="flex items-start gap-5">
+                    <MinusIcon @click="deleteChild" class="w-9 h-auto  text-red-500 hover:text-red-700 transition cursor-pointer"></MinusIcon>
+                    <PlusIcon  @click="newChild" class="w-9 h-auto text-green-500 hover:text-green-700 transition cursor-pointer" />
                 </div>
             </div>
-
-            <div class="w-full flex h-60">
-                <Dropzone class="w-full"></Dropzone>
-            </div>
-
-            <h2 class="text-2xl mt-5 h-10">Uploaded files:</h2>
-            <div class="h-110 overflow-auto" v-auto-animate>
-                <div v-for="file in files">
-                    <FilesInput v-model="files" :file_obj="file"></FilesInput>
+            <div class="h-185 flex-col overflow-auto">
+                <div v-for="child in productStore.product.childs">
+                    <ChildsInput v-model="productStore.product.childs" :child="child" :products="production.products"></ChildsInput>
+                    <Separator class="bg-gray-500" />
                 </div>
-                <p class="flex justify-center items-center" v-if="files.length < 1">No files uploaded</p>
             </div>
 
             <div class="flex-col gap-5 items-center justify-center w-full">

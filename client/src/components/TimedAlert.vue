@@ -23,7 +23,7 @@ const props = defineProps(['type', 'message'])
   z-index: 199999;
   width: 25rem;
   top: 10%;
-  left: 50%;
+  left: 55%;
   margin-left: -12.5rem;
 }
 </style>

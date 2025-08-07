@@ -33,11 +33,11 @@ console.log(props.file_obj)
         </div>
         <div class="flex gap-5">
             <div>
-                <Checkbox v-model="ifDrawing" @click="ifBOM = false"></Checkbox>
+                <Checkbox v-model="props.file_obj.drawing" @click="props.file_obj.bom = false"></Checkbox>
                 <label class="ml-2">Drawing?</label>
             </div>
             <div>
-                <Checkbox v-model="ifBOM" @click="ifDrawing = false"></Checkbox>
+                <Checkbox v-model="props.file_obj.bom" @click="props.file_obj.drawing = false"></Checkbox>
                 <label class="ml-2">BOM?</label>
             </div>
             <DeleteIcon @click="deleteFile" class="cursor-pointer mr-1"></DeleteIcon>

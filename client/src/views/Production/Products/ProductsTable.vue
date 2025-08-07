@@ -1,6 +1,6 @@
 <script setup> 
 
-import { computed, defineProps, ref, toRaw, reactive, watch, watchEffect } from 'vue'
+import { computed, defineProps, ref, toRaw, reactive, watch, watchEffect, isReactive, unref, isRef } from 'vue'
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 import { useProductionStore } from '@/storage/production'
@@ -23,6 +23,8 @@ import {
 import { Archive } from 'lucide-vue-next'
 import ArchiveIcon from '@/icons/ArchiveIcon.vue'
 import { excelParser } from "@/lib/excel-parser";
+import { read, writeFileXLSX, } from "xlsx";
+import XLSX from "xlsx"
 
 const production = useProductionStore()
 const emit = defineEmits(['refresh', 'create', 'delete','update']);
@@ -57,7 +59,8 @@ const changeServer = (data) => {
 };
 
 const exportTable = (type) => {
-    let records = datatable.value.getSelectedRows();
+    let records = datatable.value.getSelectedRows()
+    let columns = datatable.value.getColumnFilters()
     if (!records?.length) {
         records = rows.value
     }
@@ -89,11 +92,43 @@ const exportTable = (type) => {
         if (result === null) return;
 
         if (type === 'csv') {
-            var data = 'data:application/csv;charset=utf-8,' + encodeURIComponent(result);
-            var link = document.createElement('a')
-            link.setAttribute('href', data)
-            link.setAttribute('download', filename + '.csv')
-            link.click();
+            const plainData = records.map(item => {
+                delete item['name']
+                columns.forEach(colum => {
+                    if(colum.hide){
+                        delete item[colum.field]
+                    }
+                });
+                if(isRef(item)) {
+                    return toRaw(unref(item))
+                }
+                if(isReactive(item)) {
+                    return toRaw(item)
+                }
+                return item
+            })
+            let ws = XLSX.utils.json_to_sheet(plainData);
+            let wb = XLSX.utils.book_new() 
+            console.log(ws)
+            XLSX.utils.book_append_sheet(wb, ws, 'Products')
+
+            const COL_WIDTH = 100;
+            let COL_INDEXES = [0,1,2,3,4,5,6,7,8,9]
+            if(!ws["!cols"]) ws["!cols"] = []
+
+            COL_INDEXES.forEach(COL_INDEX => {
+                if(!ws["!cols"][COL_INDEX]) ws["!cols"][COL_INDEX] = {wch: 8}
+                ws["!cols"][COL_INDEX].wpx = COL_WIDTH;
+            });
+
+            if(!ws["!rows"]) ws["!rows"] = []
+
+            if(!ws["!rows"][0]) ws["!rows"][0] = {hpx: 30};
+            ws["!rows"][0].hpx = 30;
+
+            ws['!autofilter'] = { ref:"A1:I1" };
+
+            XLSX.writeFile(wb, 'products.xlsx', {cellStyles: true})
         }
 
         if (type === 'txt') {
@@ -254,7 +289,7 @@ const rowClick = async (e) => {
           <div class="flex justify-between items-center">
               <div class="mb-5 flex items-center gap-3">
                 <button type="button" class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" @click="exportTable('csv')">
-                    CSV
+                    Excel
                 </button>
                 <button type="button" class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" @click="exportTable('txt')">
                     TXT
@@ -266,7 +301,9 @@ const rowClick = async (e) => {
               <button class="m-4 flex items-center gap-4">
                 <TrashIcon @click="showAlert" class="w-9 h-auto text-gray-500 hover:text-gray-700 transition" />
 
-                <PlusIcon @click="$emit('create')" class="w-9 h-auto  text-green-500 hover:text-green-700 transition" />
+                <RouterLink to="/product-create">
+                    <PlusIcon @click="$emit('create')" class="w-9 h-auto  text-green-500 hover:text-green-700 transition" />
+                </RouterLink>
               </button>
           </div>
 
@@ -277,18 +314,21 @@ const rowClick = async (e) => {
             :columns="cols"
             :loading="loading"
             :totalRows="total_rows"
-            :pagination="true"
+            :pagination="false"
             :search="params.search"
             :sortColumn="params.sort_column"
             :sortDirection="params.sort_direction"
             :columnFilter="true"
             :stickyHeader="true"
-            height="450px"
-            skin="bh-table-compact "
+            skin="bh-table-compact"
+            class="table-test"
             :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer'"
             @rowClick="rowClick"
             @sortChange="changeServer"
         >
+        <template #id="data">
+            <strong>{{ data.value.id }}</strong>
+        </template>
           <template #email="data">
             <a :href="`mailto:${data.value.email}`" class="text-primary text-blue-600 hover:underline underline" @click.stop>{{ data.value.email }}</a>
           </template>
@@ -302,6 +342,9 @@ const rowClick = async (e) => {
     </div>
 </template>
 
-<style scoped>
-
+<style>
+.table-test .bh-table-responsive{
+    height: auto !important;
+    overflow: none;
+}
 </style>

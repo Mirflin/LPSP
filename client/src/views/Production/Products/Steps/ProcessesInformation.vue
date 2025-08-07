@@ -38,7 +38,7 @@ const deleteProcess = () => {
 
 const next = () => {
     let pass = true
-    if( productStore.product.processes.length < 1){
+    if( productStore.product.processes.length < 1 || Object.is(productStore.product.processes, null) || productStore.product.processes == null){
         alert_message.value = "Please choose minimum 1 process"
         alert_type.value = "error"
         pass = false

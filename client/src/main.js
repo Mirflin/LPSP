@@ -20,7 +20,7 @@ import vueformConfig from './../vueform.config'
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
-axios.defaults.baseURL = "http://192.168.88.33:8000";
+axios.defaults.baseURL = "http://192.168.88.44:8000";
 
 const app = createApp(App)
 const store = createPinia()

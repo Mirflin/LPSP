@@ -11,7 +11,6 @@ const loading = ref(false)
 const production = useProductionStore()
 const productStore = useProductCreate()
 const clients = useClientsStore()
-console.log(clients)
 let options = []
 onMounted(async() => {
     loading.value = true

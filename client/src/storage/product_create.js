@@ -11,9 +11,10 @@ export const useProductCreate = defineStore('product_create', () => {
         "description": "",
         "additional_info": "",
         "weight": "",
-        "materials": "",
+        "materials": [],
         "client": '',
         "files": [],
+        "childs": [],
         "processes": [{'id': 1, 'process': '', 'subprocess': '', 'price': 0, 'additional_price': 0}],
     })
 

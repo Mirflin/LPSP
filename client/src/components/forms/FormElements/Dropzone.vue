@@ -81,7 +81,7 @@ onMounted(() => {
     dictDefaultMessage: '',
     init: function () {
       this.on('addedfile', (file) => {
-        const obj = {'id': file_counter, 'file': file}
+        const obj = {'id': file_counter, 'file': file, 'drawing': false, 'bom': false}
         file_counter += 1
         productStore.product.files.push(obj)
       })

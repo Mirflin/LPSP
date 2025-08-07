@@ -5,7 +5,7 @@ import axios from 'axios'
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
-axios.defaults.baseURL = "http://192.168.88.33:8000";
+axios.defaults.baseURL = "http://192.168.88.44:8000";
 
 window.Pusher = Pusher;
 window.Echo = new Echo({
@@ -17,22 +17,16 @@ window.Echo = new Echo({
   authorizer: (channel, options) => {
     return {
       authorize: (socketId, callback) => {
-        axios.get("http://192.168.88.33:8000/sanctum/csrf-cookie", { withCredentials: true })
-          .then(() => {
-            axios.post("http://192.168.88.33:8000/api/broadcasting/auth", {
-              socket_id: socketId,
-              channel_name: channel.name,
-            }, { withCredentials: true })
-            .then(response => {
-              callback(false, response.data);
-            })
-            .catch(error => {
-              callback(true, error);
-            });
-          })
-          .catch(error => {
-            callback(true, error);
-          });
+        axios.post("http://192.168.88.44:8000/api/broadcasting/auth", {
+          socket_id: socketId,
+          channel_name: channel.name,
+        }, { withCredentials: true })
+        .then(response => {
+          callback(false, response.data);
+        })
+        .catch(error => {
+          callback(true, error);
+        });
       }
     };
   },

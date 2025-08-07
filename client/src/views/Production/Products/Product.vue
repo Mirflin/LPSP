@@ -24,7 +24,9 @@ const cols = [
   { field: 'part_nr', title: 'Part number', hide: false },
   { field: 'revision', title: 'Revision', hide: false },
   { field: 'description', title: 'Description', hide: false },
+  { field: 'additional_info', title: 'Additional info', hide: false },
   { field: 'weight', title: 'Weight', hide: true },
+  { field: 'client_id', title: 'Client', hide: false },
   { field: 'updated_at', title: 'Updated at', hide: true },
   { field: 'created_at', title: 'Created at', hide: true },
 ]
@@ -56,7 +58,7 @@ const fetch = async () => {
 }
 
 const row_delete = async (rows) => {
-  const response = await production.deleteProduct(rows)
+  const response = await production.deleteProducts(rows)
   if(!response) {
     alert_type.value = "success"
     alert_message.value = "Product(s) deleted successfully!"

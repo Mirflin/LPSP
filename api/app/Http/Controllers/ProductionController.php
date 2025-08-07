@@ -8,6 +8,7 @@ use App\Models\Material;
 use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Process_list;
+use App\Models\Client;
 use Illuminate\Support\Facades\Log;
 
 class ProductionController extends Controller
@@ -57,6 +58,11 @@ class ProductionController extends Controller
         $products = Product::all();
         $process = Process_list::all();
 
+        foreach($products as $product){
+            $product->name = $product->drawing_nr;
+            $client = Client::find($product->client_id);
+            $product->client_id = $client->name;
+        }
 
         return response()->json(['message' => 'data fetched!', 'materials' => $materials, 'plans' => $plans, 'products' => $products, 'processes' => $process], 200);
     }
