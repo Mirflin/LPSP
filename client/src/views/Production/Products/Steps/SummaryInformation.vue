@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from 'vue'
+import {ref, computed} from 'vue'
 import {useProductCreate} from '@/storage/product_create'
 import FileIcons from "file-icons-vue"
 
@@ -8,6 +8,15 @@ const emit = defineEmits(['update', 'cancel', 'next', 'back'])
 const productStore = useProductCreate()
 const loading = ref(false)
 console.log(productStore.product)
+
+const total_price = computed(() => {
+    let result = 0
+    productStore.product.processes.forEach(proc => {
+        result = result + (proc.price + proc.additional_price)
+    })
+    return result
+})
+
 </script>
 
 <template>
@@ -20,8 +29,8 @@ console.log(productStore.product)
             </div>
 
             <div class="h-185 flex-col">
-                <div class="flex flex-row w-full h-full">
-                    <div class="flex-col flex gap-5 text-lg flex-1 p-5">
+                <div class="flex flex-row flex-nowrap w-full h-full flex-wrap">
+                    <div class="flex-col flex gap-5 flex-1 text-lg p-5 min-w-200">
                         <h2 class="text-2xl mb-5">General</h2>
                         <div class="flex flex-row gap-5 justify-between">
                             <p>Drawing number </p>  {{ productStore.product.drawing_nr }}
@@ -42,20 +51,39 @@ console.log(productStore.product)
                             <p>Weight </p>  {{ productStore.product.weight }}
                         </div>
                         <div class="flex flex-row gap-5 justify-between">
-                            <p>Child products </p>  <div class="h-20"> <p v-for="child in productStore.product.childs">{{child.children_product.drawing_nr}} </p> </div>
+                            <p>Child products </p>  <div class="h-20 overflow-auto"> <p v-for="child in productStore.product.childs">{{child.children_product.drawing_nr}} </p> </div>
                         </div>
                     </div>
                     <div class="flex-1 p-5">
                         <h2 class="text-2xl mb-5">Files</h2>
-                        <div class="h-50 p-3 overflow-auto border-1 rounded-md">
+                        <div class="h-42 p-3 overflow-auto border-1 rounded-md">
                             <div class="flex gap-5 items-center" v-for="fileObj in productStore.product.files">
                                 <FileIcons 
-                                    :name="fileObj.file.upload.filename" :width="50" :height="50" 
+                                    :name="fileObj.name" :width="50" :height="50" 
                                     :isFolder="false" :isMulti="false" :isLink="false" 
                                     :itemStyle="{display: 'flex', alignItems: 'center'}"  
                                 />
-                                <p class="flex gal-5 flex-col"><div class="">{{ fileObj.drawing ? 'Drawing' : ''}} {{ fileObj.bom ? 'BOM' : ''}} {{ fileObj.bom && fileObj.drawing ? 'Other' : ''}}</div>{{ fileObj.file.upload.filename }}</p>
+                                <p class="flex gal-5 flex-col"><div class="">{{ fileObj.drawing ? 'Drawing' : ''}} {{ fileObj.bom ? 'BOM' : ''}} {{ fileObj.bom || fileObj.drawing ? '' : 'Other'}}</div>{{ fileObj.file.upload.filename }}</p>
                             </div>
+                        </div>
+                        <div class="h-100 mt-2">
+                            <h2 class="text-2xl mb-5">Processes</h2>
+                            <div class="h-full p-3 overflow-auto border-1 rounded-md">
+                                <div class="flex gap-5 flex-col" v-for="proc in productStore.product.processes">
+                                    <div class="mb-5 text-lg flex justify-between gap-5 w-full">
+                                        <p class="w-2">#{{ proc.id }}</p>
+                                        <div class="items-start justify-start">
+                                            <p>Process: {{proc.process.name}}</p>
+                                            <p>Sub-process: {{proc.subprocess ? proc.subprocess : 'no'}}</p>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <p>Price: {{ proc.price }}€</p>
+                                            <p>Additional price: {{ proc.additional_price }}€</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-lg">Total price: {{ total_price }}€</p>
                         </div>
                     </div>
                 </div>

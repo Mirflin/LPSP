@@ -67,6 +67,15 @@ const dropzoneForm = ref(null)
 const dropzoneId = `dropzone-${Math.random().toString(36).substr(2, 9)}`
 let dropzoneInstance = null
 
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
 onMounted(() => {
   Dropzone.autoDiscover = false
 
@@ -80,8 +89,9 @@ onMounted(() => {
     headers: { 'My-Awesome-Header': 'header value' },
     dictDefaultMessage: '',
     init: function () {
-      this.on('addedfile', (file) => {
-        const obj = {'id': file_counter, 'file': file, 'drawing': false, 'bom': false}
+      this.on('addedfile', async(file) => {
+        const base64 = await fileToBase64(file);
+        const obj = {'id': file_counter, 'file': file, 'base64': base64, 'drawing': false, 'bom': false, 'name': file.name, 'type': file.type}
         file_counter += 1
         productStore.product.files.push(obj)
       })

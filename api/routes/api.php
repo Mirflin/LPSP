@@ -59,3 +59,7 @@ Route::delete('/material/{id}', [ProductionController::class, 'deleteMaterial'])
 Route::delete('/product/{id}', [ProductionController::class, 'deleteProduct'])
     ->middleware('auth:sanctum')
     ->name('production.product.delete');
+
+Route::post('/product-create', [ProductionController::class, 'createProduct'])
+    ->middleware('auth:sanctum')
+    ->name('production.product.create');

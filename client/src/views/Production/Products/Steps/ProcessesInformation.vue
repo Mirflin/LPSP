@@ -104,7 +104,7 @@ const total_price = computed(() => {
 
                 <div class="flex justify-end mt-5 mb-2">
                     <label class="mr-2">Total: </label>
-                    <p>{{total_price}}</p>€
+                    <p>{{total_price}}</p>
                 </div>
             </div>
             <div class="flex-col gap-5 items-center justify-center w-full">

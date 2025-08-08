@@ -10,9 +10,130 @@ use App\Models\Product;
 use App\Models\Process_list;
 use App\Models\Client;
 use Illuminate\Support\Facades\Log;
+use App\Models\Product_material;
+use App\Models\Product_children;
+use App\Models\Process;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\UploadedFile;
+use Str;
 
 class ProductionController extends Controller
 {
+    public function createProduct(Request $request) {
+        $validated = $request->validate([
+            'drawing_nr' => 'required|string',
+            'part_nr' => 'required|string',
+            'revision' => 'nullable|string',
+            'description' => 'nullable|string',
+            'additional_info' => 'nullable|string',
+            'client' => 'nullable|array',
+            'files' => 'nullable|array',
+            'materials' => 'required|array',
+            'childs' => 'nullable',
+            'processes' => 'required|array',
+            'weight' => 'nullable|numeric'
+        ]);
+
+        $product = Product::create([
+            'drawing_nr' => $validated['drawing_nr'],
+            'part_nr' => $validated['part_nr'],
+            'revision' => $validated['revision'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'additional_info' => $validated['additional_info'] ?? null,
+            'client_id' => $validated['client']['id'] ?? null,
+            'weight' => $validated['weight'] ?? null
+        ]);
+
+        if(!empty($validated['childs'])){
+            foreach($validated['childs'] as $child){
+                Product_children::create([
+                    'product_id' => $product->id,
+                    'children_product_id' => $child['id'],
+                ]);
+            }
+        }
+
+        if($validated['materials']){
+            foreach($validated['materials'] as $material){
+                Product_material::create([
+                    'product_id' => $product->id,
+                    'material_id' => $material['id']
+                ]);
+            }
+        }
+        if($validated['processes']){
+            foreach($validated['processes'] as $process){
+                Process::create([
+                    'place' => $process['id'],
+                    'sub_process' => $process['id'],
+                    'price' => $process['price'],
+                    'additional_price' => $process['additional_price'],
+                    'product_id' => $product->id,
+                    'process_id' => $process['process']['id']
+                ]);
+            }
+        }
+
+        $accessToken = $this->token();
+
+        if (!empty($validated['files'])) {
+            foreach ($validated['files'] as $file) {
+                $base64_string = preg_replace('#^data:.*;base64,#', '', $file['base64']);
+                $decoded = base64_decode($base64_string);
+
+                $tmpFilePath = tempnam(sys_get_temp_dir(), 'upload_');
+
+                file_put_contents($tmpFilePath, $decoded);
+
+                Log::info($file);
+                $uploadedFile = new UploadedFile(
+                    $tmpFilePath,
+                    $file['name'],
+                    $file['type'],
+                    null,
+                    true
+                );
+
+                $name = Str::slug(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
+                $mime = $uploadedFile->getClientMimeType();
+
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                ])->post('https://www.googleapis.com/drive/v3/files', [
+                    'name' => $name,
+                    'mimeType' => $mime,
+                    'uploadType' => 'resumable',
+                ]);
+
+                Log::info('API call successful: ' . ($response->successful() ? 'yes' : 'no'));
+            }
+        }
+
+
+
+        Log::info($product);
+
+        return response()->json(['message'=>'Product created!', 201]);
+    }
+
+    public function token(){
+        $client_id=\Config('services.google.client_id');
+        $client_secret=\Config('services.google.client_secret');
+        $refresh_token=\Config('services.google.refresh_token');
+
+        $response = Http::post('https://oauth2.googleapis.com/token', [
+            'client_id' => $client_id,
+            'client_secret' => $client_secret,
+            'refresh_token' => $refresh_token,
+            'grant_type' => 'refresh_token', 
+        ]);
+
+        $accessToken = json_decode((string)$response->getBody(), true)['access_token'];
+        return $accessToken;
+    }
+
     public function createMaterial(Request $request) {
         if(Auth::user()->permission != 1){
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -82,4 +203,5 @@ class ProductionController extends Controller
 
         return response()->json(['message' => 'Material deleted successfully'], 204);
     }
+
 }

@@ -14,9 +14,12 @@ import SummaryInformation from './Steps/SummaryInformation.vue'
 import { useRouter } from 'vue-router'
 import {useProductionStore} from "@/storage/production.js"
 import {useClientsStore} from "@/storage/clients.js"
+import axios from 'axios'
+import {useProductCreate} from '@/storage/product_create.js'
 
 const production = useProductionStore()
 const clients = useClientsStore()
+const productStore = useProductCreate()
 
 const route = useRoute()
 const product_id = ref(route.params.id)
@@ -33,6 +36,8 @@ const componentMap = [
 const selectedComponent = shallowRef(componentMap[step.value])
 const stepInfo = ["General info", "Processes", "Files", "Childs", "Summary"]
 const loading = ref(false)
+const alert_message = ref()
+const alert_type = ref()
 
 onMounted(async() => {
     loading.value = true
@@ -57,11 +62,29 @@ const cancel = () => {
     router.push("/product")
 }
 
+const save = async() => {
+    loading.value = true
+    const response = await productStore.save()
+    if(!response){
+        router.push('/product')
+    }else{
+        alert_message.value = response
+        alert_message.value = "error"
+        setTimeout(() => {
+            alert_message.value = ''
+            alert_type.value = ''
+        }, 3000);
+    }
+}
+
 </script>
 
 <template>
     <AdminLayout>
-        
+        <TimedAlert
+            :type="alert_type"
+            :message="alert_message"
+        />
         <component v-if="!loading" :stepInfo="stepInfo" :step="step" @next="increase" @back="back" @cancel="cancel" v-bind:is="selectedComponent"></component>
         <div 
             v-else
@@ -75,7 +98,7 @@ const cancel = () => {
 
         <div class="flex gap-5 justify-end items-center mt-5 p-1">
             <Button @click="cancel" class="bg-red-600 hover:bg-red-500">Cancel</Button>
-            <Button :disabled="stepInfo[step+1] != null" class="bg-green-600">Save</Button>
+            <Button @click="save" :disabled="stepInfo[step+1] != null" class="bg-green-600 hover:bg-green-400">Save</Button>
         </div>
     </AdminLayout>
 </template>

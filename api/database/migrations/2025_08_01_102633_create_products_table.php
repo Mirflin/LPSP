@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('drawing_nr');
             $table->string('part_nr');
-            $table->string('revision');
+            $table->string('revision')->nullable();
             $table->string('description')->nullable();
             $table->string('additional_info')->nullable();
             $table->unsignedBigInteger('client_id');
