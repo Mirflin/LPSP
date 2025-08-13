@@ -28,7 +28,7 @@ onMounted(async() => {
 
 const newProccess = () => {
     process_counter.value += 1
-    productStore.product.processes.push({'id': process_counter.value, 'process': '', 'subprocess': '', 'price': 0, 'additional_price': 0})
+    productStore.product.processes.push({'id': process_counter.value, 'process': '', 'subprocess': ''})
 }
 
 const deleteProcess = () => {
@@ -102,10 +102,6 @@ const total_price = computed(() => {
                     <Separator class="bg-gray-500" />
                 </div>
 
-                <div class="flex justify-end mt-5 mb-2">
-                    <label class="mr-2">Total: </label>
-                    <p>{{total_price}}</p>
-                </div>
             </div>
             <div class="flex-col gap-5 items-center justify-center w-full">
                 <div class="mt-5 flex justify-between">

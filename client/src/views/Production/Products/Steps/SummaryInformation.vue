@@ -2,20 +2,13 @@
 import {ref, computed} from 'vue'
 import {useProductCreate} from '@/storage/product_create'
 import FileIcons from "file-icons-vue"
+import Separator from '@/components/ui/separator/Separator.vue'
 
 const props = defineProps(['step', 'stepInfo'])
 const emit = defineEmits(['update', 'cancel', 'next', 'back'])
 const productStore = useProductCreate()
 const loading = ref(false)
 console.log(productStore.product)
-
-const total_price = computed(() => {
-    let result = 0
-    productStore.product.processes.forEach(proc => {
-        result = result + (proc.price + proc.additional_price)
-    })
-    return result
-})
 
 </script>
 
@@ -41,6 +34,9 @@ const total_price = computed(() => {
                         <div class="flex flex-row gap-5 justify-between">
                             <p>Revision </p>  {{ productStore.product.revision }}
                         </div>
+                        <div class="flex flex-row gap-5 justify-between">
+                            <p>Material(s) </p>  <div class="h-10 overflow-auto"> <p v-for="material in productStore.product.materials">{{material.material}} </p> </div>
+                        </div>
                         <div class="flex flex-row gap-5 justify-between text-wrap">
                             <p>Description </p>  <textarea disabled class="w-1/2 h-40 border-1 p-2 rounded-md" style="resize: none;">{{ productStore.product.description }}</textarea>
                         </div>
@@ -51,7 +47,7 @@ const total_price = computed(() => {
                             <p>Weight </p>  {{ productStore.product.weight }}
                         </div>
                         <div class="flex flex-row gap-5 justify-between">
-                            <p>Child products </p>  <div class="h-20 overflow-auto"> <p v-for="child in productStore.product.childs">{{child.children_product.drawing_nr}} </p> </div>
+                            <p>Sub-product(s) </p>  <div class="h-20 overflow-auto"> <p v-for="child in productStore.product.childs">{{child.children_product.drawing_nr}} </p> </div>
                         </div>
                     </div>
                     <div class="flex-1 p-5">
@@ -70,20 +66,15 @@ const total_price = computed(() => {
                             <h2 class="text-2xl mb-5">Processes</h2>
                             <div class="h-full p-3 overflow-auto border-1 rounded-md">
                                 <div class="flex gap-5 flex-col" v-for="proc in productStore.product.processes">
-                                    <div class="mb-5 text-lg flex justify-between gap-5 w-full">
+                                    <div class="mb-5 text-lg flex gap-5 w-full">
                                         <p class="w-2">#{{ proc.id }}</p>
                                         <div class="items-start justify-start">
                                             <p>Process: {{proc.process.name}}</p>
                                             <p>Sub-process: {{proc.subprocess ? proc.subprocess : 'no'}}</p>
                                         </div>
-                                        <div class="flex flex-col">
-                                            <p>Price: {{ proc.price }}€</p>
-                                            <p>Additional price: {{ proc.additional_price }}€</p>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <p class="mt-2 text-lg">Total price: {{ total_price }}€</p>
                         </div>
                     </div>
                 </div>

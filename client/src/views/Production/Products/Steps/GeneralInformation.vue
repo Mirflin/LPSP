@@ -1,9 +1,10 @@
 <script setup>
 import {useProductionStore} from "@/storage/production.js"
-import { onMounted, reactive ,ref, toRaw} from 'vue'
+import { onMounted, reactive ,ref, toRaw, computed} from 'vue'
 import Multiselect from 'vue-multiselect'
 import {useProductCreate} from "@/storage/product_create.js"
 import {useClientsStore} from "@/storage/clients.js"
+import { useRouter } from 'vue-router'
 
 const props = defineProps(['step', 'stepInfo'])
 const emit = defineEmits(['update', 'cancel', 'next', 'back'])
@@ -11,9 +12,15 @@ const loading = ref(false)
 const production = useProductionStore()
 const productStore = useProductCreate()
 const clients = useClientsStore()
+const ifDrawing = ref(false)
+const router = useRouter()
+
 let options = []
 onMounted(async() => {
     loading.value = true
+    if(!production.products){
+        router.push('/product')
+    }
     options = production.materials
     loading.value = false
 })
@@ -21,8 +28,17 @@ onMounted(async() => {
 const alert_message = ref()
 const alert_type = ref()
 
+const drawing_check = async() =>{
+    ifDrawing.value = false
+    production.products.forEach(prod => {
+        if(prod.drawing_nr == productStore.product.drawing_nr){
+            ifDrawing.value = true
+        }
+    });
+}
+
 const next = () => {
-    if(!productStore.product.drawing_nr || !productStore.product.part_nr || !productStore.product.materials || !productStore.product.client){
+    if((!productStore.product.drawing_nr || !productStore.product.part_nr || !productStore.product.client)){
         alert_message.value = "Please fill all required fields!"
         alert_type.value = "error"
         setTimeout(() => {
@@ -30,6 +46,7 @@ const next = () => {
             alert_type.value = null
         }, 3000)
     }else{
+        console.log(productStore.product)
         emit('next')
     }
 }
@@ -55,6 +72,7 @@ const next = () => {
                         <input
                             type="text"
                             v-model="productStore.product.drawing_nr"
+                            @input="drawing_check"
                             placeholder="34-294..."
                             class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-[62px] text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                         />
@@ -64,6 +82,7 @@ const next = () => {
                             <svg class="p-2" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Blueprint</title><path d="M21.809 5.524L12.806.179l-.013-.007.078-.045h-.166a1.282 1.282 0 0 0-1.196.043l-.699.403-8.604 4.954a1.285 1.285 0 0 0-.644 1.113v10.718c0 .46.245.884.644 1.113l9.304 5.357c.402.232.898.228 1.297-.009l9.002-5.345c.39-.231.629-.651.629-1.105V6.628c0-.453-.239-.873-.629-1.104zm-19.282.559L11.843.719a.642.642 0 0 1 .636.012l9.002 5.345a.638.638 0 0 1 .207.203l-4.543 2.555-4.498-2.7a.963.963 0 0 0-.968-.014L6.83 8.848 2.287 6.329a.644.644 0 0 1 .24-.246zm14.13 8.293l-4.496-2.492V6.641a.32.32 0 0 1 .155.045l4.341 2.605v5.085zm-4.763-1.906l4.692 2.601-4.431 2.659-4.648-2.615a.317.317 0 0 1-.115-.112l4.502-2.533zm-.064 10.802l-9.304-5.357a.643.643 0 0 1-.322-.557V7.018L6.7 9.51v5.324c0 .348.188.669.491.84l4.811 2.706.157.088v4.887a.637.637 0 0 1-.329-.083z"/></svg>
                         </span>
                     </div>
+                    <p v-if="ifDrawing" class="text-red-500" v-auto-animate>This drawing already exists!</p>
                 </div>
                 <div class="mb-5">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -99,26 +118,6 @@ const next = () => {
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" fill="currentColor" class="p-2 bi bi-clipboard" viewBox="0 0 16 16" id="IconChangeColor"> <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" id="mainIconPathAttribute"></path> <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" id="mainIconPathAttribute"></path> </svg>
                         </span>
-                    </div>
-                </div>
-
-                <div class="mb-5">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Materials <span class="text-error-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <multiselect id="multiselect" v-model="productStore.product.materials" :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false"
-                            :preserve-search="true" placeholder="Pick some" label="name" track-by="name" :preselect-first="false"
-                        >
-                            <template #selection="{ values, search, isOpen }">
-                                <span class="multiselect__single"
-                                    v-if="values.length"
-                                    v-show="!isOpen"
-                                >
-                                    <span v-for="value in values">{{ value.name + " "}}</span> option(s) selected
-                                </span>
-                            </template>
-                        </multiselect>
                     </div>
                 </div>
                 <div class="mb-5">
@@ -182,7 +181,7 @@ const next = () => {
             <div class="text-xl">
                 {{ props.stepInfo[props.step] }}
             </div>
-            <Button @click="next" :disabled="props.stepInfo[props.step+1] == null">Next</Button>
+            <Button @click="next" :disabled="props.stepInfo[props.step+1] == null || ifDrawing">Next</Button>
         </div>
     </div>
     <div 

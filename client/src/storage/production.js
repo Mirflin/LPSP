@@ -1,13 +1,26 @@
 import { defineStore } from "pinia";
 import {ref, computed, reactive} from 'vue';
-
 import axios from 'axios';
+import echo from '@/Echo.js'
 
 export const useProductionStore = defineStore('production', () => {
-    const products = ref()
+    const products = ref([])
     const plans = ref()
     const materials = ref()
     const processes = ref()
+    let subscribed = false
+
+    const materialsRef = ref()
+    
+    if(!subscribed){
+        let products_channel = echo.private('product')
+        products_channel.listen(".newproduct", async (data) => {
+            console.log(data)
+            products.value.push(data.product)
+            console.log(products.value)
+        })
+        subscribed = true
+    }
 
     const fetch = async () => {
         try {
@@ -20,7 +33,6 @@ export const useProductionStore = defineStore('production', () => {
             return error
         }
     }
-
 
     const deleteProducts = async (rows) => {
         try {
@@ -73,4 +85,6 @@ export const useProductionStore = defineStore('production', () => {
         deleteProducts,
         fetch,
     }
+}, {
+    persist: true
 })

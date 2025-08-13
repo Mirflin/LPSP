@@ -28,9 +28,11 @@ const cols = [
 ]
 
 const fetch = async () => {
-  const response = await production.fetch()
-  if(response) {
-    console.error('Error fetching production:', response)
+  if(!production.materials){
+    const response = await production.fetch()
+    if(response) {
+      console.error('Error fetching production:', response)
+    }
   }
   loading.value = false
 }

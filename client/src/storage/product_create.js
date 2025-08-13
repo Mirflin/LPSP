@@ -11,47 +11,43 @@ export const useProductCreate = defineStore('product_create', () => {
         "description": "",
         "additional_info": "",
         "weight": "",
-        "materials": [],
+        "materials": [{'id': 1, 'material': ''}],
         "client": '',
         "files": [],
         "childs": [],
-        "processes": [{'id': 1, 'process': '', 'subprocess': '', 'price': 0, 'additional_price': 0}],
+        "processes": [{'id': 1, 'process': '', 'subprocess': ''}],
     })
+
+    const reset = () => {
+        product.value.drawing_nr = ''
+        product.value.part_nr = ''
+        product.value.revision = ''
+        product.value.description = ''
+        product.value.additional_info = ''
+        product.value.weight = ''
+        product.value.materials = []
+        product.value.client = ''
+        product.value.files = []
+        product.value.childs = []
+        product.value.processes = [{'id': 1, 'process': '', 'subprocess': ''}]
+    }
 
     const save = async() => {
         product.value.files.forEach(file => {
             delete file.file
-            console.log(file)
         });
-        console.log(product.value)
         try{
             const response = await axios.post('/api/product-create', product.value)
+            reset()
             return null
         } catch(error){
             return error
         }
     }
 
-    function appendFormData(formData, data, parentKey = '') {
-        if (data === null || data === undefined) return;
-
-        if (Array.isArray(data)) {
-            data.forEach((item, index) => {
-            appendFormData(formData, item, `${parentKey}[${index}]`);
-            });
-        } else if (typeof data === 'object' && !(data instanceof File)) {
-            Object.keys(data).forEach(key => {
-            const value = data[key];
-            const newKey = parentKey ? `${parentKey}[${key}]` : key;
-            appendFormData(formData, value, newKey);
-            });
-        } else {
-            formData.append(parentKey, data);
-        }
-        }
-
     return{
         save,
+        reset,
         product
     }
 })

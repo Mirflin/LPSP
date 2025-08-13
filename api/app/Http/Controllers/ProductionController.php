@@ -16,10 +16,40 @@ use App\Models\Process;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\UploadedFile;
+use Yaza\LaravelGoogleDriveStorage\Gdrive;
 use Str;
+use App\Jobs\GoogleDrive;
+use App\Events\NewProduct;
 
 class ProductionController extends Controller
 {
+    private function getProductById($id) {
+        if(Auth::user()->permission != 1){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $product = Product::find($id);
+
+        $product->materials = [];
+        $product->name = $product->drawing_nr;
+
+        $client = Client::find($product->client_id);
+        $product->client = $client;
+
+        $materialRefs = Product_material::where('product_id', $product->id)->get();
+
+        $materials = [];
+        foreach ($materialRefs as $ref) {
+            $material = Material::find($ref->material_id);
+            if ($material) {
+                $materials[] = $material;
+            }
+        }
+        $product->setRelation('materials', collect($materials));
+
+        return $product;
+    }
+
     public function createProduct(Request $request) {
         $validated = $request->validate([
             'drawing_nr' => 'required|string',
@@ -54,28 +84,30 @@ class ProductionController extends Controller
             }
         }
 
-        if($validated['materials']){
-            foreach($validated['materials'] as $material){
+        if (!empty($validated['materials'])) {
+            foreach ($validated['materials'] as $material) {
+
+                $materialName = is_array($material) ? $material['material'] : $material;
+
+                $mat = Material::firstOrCreate(['name' => $materialName]);
+
                 Product_material::create([
                     'product_id' => $product->id,
-                    'material_id' => $material['id']
+                    'material_id' => $mat->id
                 ]);
             }
         }
+
         if($validated['processes']){
             foreach($validated['processes'] as $process){
                 Process::create([
                     'place' => $process['id'],
                     'sub_process' => $process['id'],
-                    'price' => $process['price'],
-                    'additional_price' => $process['additional_price'],
                     'product_id' => $product->id,
                     'process_id' => $process['process']['id']
                 ]);
             }
         }
-
-        $accessToken = $this->token();
 
         if (!empty($validated['files'])) {
             foreach ($validated['files'] as $file) {
@@ -86,7 +118,6 @@ class ProductionController extends Controller
 
                 file_put_contents($tmpFilePath, $decoded);
 
-                Log::info($file);
                 $uploadedFile = new UploadedFile(
                     $tmpFilePath,
                     $file['name'],
@@ -95,25 +126,26 @@ class ProductionController extends Controller
                     true
                 );
 
-                $name = Str::slug(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
-                $mime = $uploadedFile->getClientMimeType();
+                $full_path = ('products/'.$validated['client']['name'].'/'.$validated['drawing_nr'].'/');
 
-                $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $accessToken,
-                    'Content-Type' => 'application/json',
-                ])->post('https://www.googleapis.com/drive/v3/files', [
-                    'name' => $name,
-                    'mimeType' => $mime,
-                    'uploadType' => 'resumable',
-                ]);
+                if($file['drawing'] == false && $file['bom'] == false){
+                    $full_path = ('products/'.$validated['client']['name'].'/'.$validated['drawing_nr'].'/other'.'/');
+                }elseif($file['drawing']){
+                    $full_path = ('products/'.$validated['client']['name'].'/'.$validated['drawing_nr'].'/drawings'.'/');
+                }elseif($file['bom']){
+                    $full_path = ('products/'.$validated['client']['name'].'/'.$validated['drawing_nr'].'/BOM'.'/');
+                }
 
-                Log::info('API call successful: ' . ($response->successful() ? 'yes' : 'no'));
+                Storage::put($full_path, $uploadedFile);
             }
+            GoogleDrive::dispatch($validated['files'], ($validated['client']['name'].'/'.$validated['drawing_nr'].'/'));
         }
 
+        $newProd = $this->getProductById(intval($product->id));
 
+        Log::info($newProd);
 
-        Log::info($product);
+        broadcast(new NewProduct($newProd))->toOthers();
 
         return response()->json(['message'=>'Product created!', 201]);
     }
@@ -180,9 +212,23 @@ class ProductionController extends Controller
         $process = Process_list::all();
 
         foreach($products as $product){
+            $product->materials = [];
             $product->name = $product->drawing_nr;
+
             $client = Client::find($product->client_id);
-            $product->client_id = $client->name;
+            $product->client = $client;
+
+
+            $materialRefs = Product_material::where('product_id', $product->id)->get();
+
+            $materials = [];
+            foreach ($materialRefs as $ref) {
+                $material = Material::find($ref->material_id);
+                if ($material) {
+                    $materials[] = $material;
+                }
+            }
+            $product->setRelation('materials', collect($materials));
         }
 
         return response()->json(['message' => 'data fetched!', 'materials' => $materials, 'plans' => $plans, 'products' => $products, 'processes' => $process], 200);

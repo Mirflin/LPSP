@@ -3,10 +3,17 @@
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Auth;
 
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
 Broadcast::channel('clients', function ($user) {
-    return Auth()->check();
+    Log::info('Authorizing product channel for user:', ['id' => $user->id]);
+    return true;
+});
+
+Broadcast::channel('product', function ($product) {
+    return true;
 });

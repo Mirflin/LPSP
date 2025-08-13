@@ -8,7 +8,8 @@ import flatPickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
 import moment from 'moment'
 import { useAuthStore } from '../../storage/auth'
-import '@/Echo.js'
+import echo from '@/Echo.js'
+
 
 const clientsStore = useClientsStore()
 const loading = ref(true)
@@ -57,7 +58,7 @@ const cols = [
 onMounted(() => {
   fetch()
   
-  let channel = window.Echo.private('clients')
+  let channel = echo.private('clients')
   channel.listen(".newclient", async (data) => {
       alert_type.value = "info"
       alert_message.value = "Client update: "+data.client.name
@@ -69,7 +70,7 @@ onMounted(() => {
   })
 })
 onUnmounted(() => {
-  window.Echo.leave('clients')
+  echo.leave('clients')
 })
 
 const fetch = async () => {
@@ -94,6 +95,19 @@ const createClient = async () => {
       createModal.value = false
       alert_type.value = "success"
       alert_message.value = "Client added/updated successfully!"
+
+      form.name = ''
+      form.email = ''
+      form.phone = ''
+      form.address = ''
+      form.contact_person = ''
+      form.delivery_address = ''
+      form.registration_nr = ''
+      form.pvn_nr = ''
+      form.bank = ''
+      form.iban = ''
+      form.payment_term = ''
+
       fetch()
       setTimeout(() => {
           alert_message.value = null
@@ -389,7 +403,7 @@ const currentPageTitle = 'Clients'
                   type="submit"
                   class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
                 >
-                  Save Changes
+                  {{loading ? 'Loading...' : 'Save changes'}}
                 </button>
               </div>
             </form>

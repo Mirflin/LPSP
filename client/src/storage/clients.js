@@ -55,4 +55,6 @@ export const useClientsStore = defineStore('clients', () => {
         updateClient,
         deleteClients
     }
+}, {
+    persist: true
 })

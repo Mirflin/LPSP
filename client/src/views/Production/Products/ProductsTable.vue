@@ -28,7 +28,7 @@ import XLSX from "xlsx"
 
 const production = useProductionStore()
 const emit = defineEmits(['refresh', 'create', 'delete','update']);
-const props = defineProps(["cols", "rows"])
+const props = defineProps(["cols"])
 
 const alert_type = ref('')
 const alert_message = ref('')
@@ -36,20 +36,12 @@ const alert_message = ref('')
 const isOpen = ref(false)
 const loading = ref(false);
 const datatable = ref(null);
-const total_rows = ref(production.products ? production.products.length : 0);
-const rows = ref(props.rows ? toRaw(props.rows) : [])
-total_rows.value = rows.value.length;
-
-watch(() => production.products, (newProducts) => {
-    rows.value = toRaw(newProducts)
-    total_rows.value = newProducts.length;
-}, { immediate: true ,deep:true })
 
 const params = reactive({ current_page: 1, pagesize: 10, sort_column: 'id', sort_direction: 'asc', search: '' })
 
-const cols = ref(props.cols)
+const rows = computed(() => production.products)
 
-const deleteAlert = ref(false)
+const cols = ref(props.cols)
 
 const changeServer = (data) => {
     params.current_page = data.offset / 10
@@ -62,7 +54,7 @@ const exportTable = (type) => {
     let records = datatable.value.getSelectedRows()
     let columns = datatable.value.getColumnFilters()
     if (!records?.length) {
-        records = rows.value
+        records = production.products
     }
     const filename = 'Products_' + new Date().toISOString().slice(0, 10) + '_' + new Date().getTime();
 
@@ -172,7 +164,7 @@ const exportTable = (type) => {
         };
         winPrint.print()
     } else if(type === "excel"){
-         excelParser().exportDataFromJSON(rows, null, null);
+         excelParser().exportDataFromJSON(rows.value, null, null);
     }
 };
 
@@ -220,8 +212,8 @@ const deleteRecords = async () => {
     }
 }
 
-const rowClick = async (e) => {
-    emit('update', toRaw(e))
+const rowClick = async (row) => {
+    emit('update', row)
 }
 
 </script>
@@ -246,8 +238,8 @@ const rowClick = async (e) => {
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
-    <div class="rounded-2xl border border-gray-200 bg-white h-auto p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-          <div class="mb-5 relative flex justify-between">
+    <div class="rounded-2xl border border-gray-200 bg-white h-auto p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6" v-if="!loading">
+        <div class="mb-5 relative flex justify-between">
             <button type="button" class="dark:bg-dark-900 h-11 w-40 flex rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" @click="isOpen = !isOpen">
                 Column Chooser
                 <svg
@@ -285,24 +277,23 @@ const rowClick = async (e) => {
                   </label>
               </li>
             </ul>
-          </div>
-          <div class="flex justify-between items-center">
-              <div class="mb-5 flex items-center gap-3">
-                <button type="button" class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" @click="exportTable('csv')">
-                    EXCEL
-                </button>
-                <button type="button" class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" @click="exportTable('print')">
-                    PDF
-                </button>
-              </div>
-              <button class="m-4 flex items-center gap-4">
-                <TrashIcon @click="showAlert" class="w-9 h-auto text-gray-500 hover:text-gray-700 transition" />
-
-                <RouterLink to="/product-create">
-                    <PlusIcon @click="$emit('create')" class="w-9 h-auto  text-green-500 hover:text-green-700 transition" />
-                </RouterLink>
+        </div>
+            <div class="flex justify-between items-center">
+                <div class="mb-5 flex items-center gap-3">
+                    <button type="button" class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" @click="exportTable('csv')">
+                        EXCEL
+                    </button>
+                    <button type="button" class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" @click="exportTable('print')">
+                        PDF
+                    </button>
+                </div>
+                <button class="m-4 flex items-center gap-4">
+                    <TrashIcon @click="showAlert" class="w-9 h-auto text-gray-500 hover:text-gray-700 transition" />
+                    <RouterLink to="/product-create">
+                        <PlusIcon @click="$emit('create')" class="w-9 h-auto  text-green-500 hover:text-green-700 transition" />
+                    </RouterLink>
               </button>
-          </div>
+            </div>
 
         <vue3-datatable
             ref="datatable"
@@ -310,7 +301,6 @@ const rowClick = async (e) => {
             :hasCheckbox="true"
             :columns="cols"
             :loading="loading"
-            :totalRows="total_rows"
             :pagination="false"
             :search="params.search"
             :sortColumn="params.sort_column"
@@ -328,6 +318,9 @@ const rowClick = async (e) => {
         </template>
           <template #email="data">
             <a :href="`mailto:${data.value.email}`" class="text-primary text-blue-600 hover:underline underline" @click.stop>{{ data.value.email }}</a>
+          </template>
+          <template #client="data">
+            <span class="text-gray-500" v-if="data.value.client">{{ data.value.client.name }}</span>
           </template>
           <template #created_at="data">
             <span class="text-gray-500">{{ data.value.created_at ? moment(data.value.created_at).format('YYYY-MM-DD') : 'no data' }}</span>

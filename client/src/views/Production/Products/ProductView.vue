@@ -16,6 +16,7 @@ import {useProductionStore} from "@/storage/production.js"
 import {useClientsStore} from "@/storage/clients.js"
 import axios from 'axios'
 import {useProductCreate} from '@/storage/product_create.js'
+import MaterialsInformation from './Steps/MaterialsInformation.vue'
 
 const production = useProductionStore()
 const clients = useClientsStore()
@@ -28,23 +29,17 @@ const router = useRouter()
 const componentMap = [
     GeneralInformation,
     ProcessesInformation,
+    MaterialsInformation,
     FilesInformation,
     ChildsInformation,
     SummaryInformation
 ]
 
 const selectedComponent = shallowRef(componentMap[step.value])
-const stepInfo = ["General info", "Processes", "Files", "Childs", "Summary"]
+const stepInfo = ["General info", "Processes", "Materials", "Files", "Sub-products", "Summary"]
 const loading = ref(false)
 const alert_message = ref()
 const alert_type = ref()
-
-onMounted(async() => {
-    loading.value = true
-    await production.fetch()
-    await clients.fetchClients()
-    loading.value = false
-})
 
 watch(step, () => {
     selectedComponent.value = componentMap[step.value]

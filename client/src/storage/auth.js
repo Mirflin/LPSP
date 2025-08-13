@@ -1,12 +1,10 @@
 import { defineStore } from "pinia";
 import {ref, computed, reactive} from 'vue';
-import echo from "@/Echo.js"
 import axios from 'axios';
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref()
     const profile = ref({})
-    const echoInstance = ref()
     const authenticated = ref(false)
     const isAuthResolved = ref(false)
 

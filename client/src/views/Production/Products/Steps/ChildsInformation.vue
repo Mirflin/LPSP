@@ -62,7 +62,7 @@ const deleteChild = () => {
         <div v-if="!loading" class="rounded-2xl border border-gray-200 bg-white h-auto p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
             <div class="flex justify-between">
                 <div class="mb-5 text-2xl">
-                    Child products
+                    Sub-products
                 </div>
                 <div class="flex items-start gap-5">
                     <MinusIcon @click="deleteChild" class="w-9 h-auto  text-red-500 hover:text-red-700 transition cursor-pointer"></MinusIcon>

@@ -22,4 +22,6 @@ export const useCredsStore = defineStore('creds', () => {
         creds,
         fetchCreds
     }
+},{
+    persist: true
 })
