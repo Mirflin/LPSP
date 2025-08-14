@@ -8,7 +8,6 @@ import { useAuthStore } from '@/storage/auth'
 import ProductsTable from './ProductsTable.vue'
 import {useClientsStore} from '@/storage/clients.js'
 import { Button } from "@/components/ui/button"
-import shadTable from '@/components/tables/shadTable.vue'
 import {
   Card,
   CardContent,
@@ -26,6 +25,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import TimedAlert from '@/components/TimedAlert.vue'
+import ProductInfo from './ProductInfo.vue'
 
 const production = useProductionStore()
 const loading = ref(false)
@@ -33,7 +33,7 @@ const alert_type = ref(null)
 const alert_message = ref(null)
 const clients = useClientsStore()
 const row = ref()
-
+const openModalView = ref()
 
 watch(
   () => production.product_alert,
@@ -83,10 +83,8 @@ const cols = ref([
 
 const update_row = (updated_row) => {
   row.value = updated_row
-  row.value.materials = production.materials.map((material) => {
-    
-  })
   console.log(row.value)
+  openModalView.value = true
 }
 
 const currentPageTitle = 'Products'
@@ -100,64 +98,11 @@ const currentPageTitle = 'Products'
       />
       <div v-if="!loading">
       <PageBreadcrumb :pageTitle="currentPageTitle" />
-      <img src=""></img>
-      <Modal v-if="row">
-        <Tabs default-value="account" class="w-[400px]">
-          <TabsList class="grid w-full grid-cols-2">
-            <TabsTrigger value="account">
-              Account
-            </TabsTrigger>
-            <TabsTrigger value="password">
-              Password
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="account">
-            <Card>
-              <CardHeader>
-                <CardTitle>Account</CardTitle>
-                <CardDescription>
-                  Make changes to your account here. Click save when you're done.
-                </CardDescription>
-              </CardHeader>
-              <CardContent class="space-y-2">
-                <div class="space-y-1">
-                  <Label for="name">Name</Label>
-                  <Input id="name" default-value="Pedro Duarte" />
-                </div>
-                <div class="space-y-1">
-                  <Label for="username">Username</Label>
-                  <Input id="username" default-value="@peduarte" />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button>Save changes</Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-          <TabsContent value="password">
-            <Card>
-              <CardHeader>
-                <CardTitle>Password</CardTitle>
-                <CardDescription>
-                  Change your password here. After saving, you'll be logged out.
-                </CardDescription>
-              </CardHeader>
-              <CardContent class="space-y-2">
-                <div class="space-y-1">
-                  <Label for="current">Current password</Label>
-                  <Input id="current" type="password" />
-                </div>
-                <div class="space-y-1">
-                  <Label for="new">New password</Label>
-                  <Input id="new" type="password" />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button>Save password</Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-        </Tabs>
+
+      <Modal v-if="openModalView">
+        <template #body>
+          <ProductInfo @close="openModalView = false" :product="row"></ProductInfo>
+        </template>
       </Modal>
 
 

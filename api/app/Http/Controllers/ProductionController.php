@@ -94,14 +94,14 @@ class ProductionController extends Controller
 
         if(!empty($validated['childs'])){
             foreach($validated['childs'] as $child){
-                $childProduct = Product::find($child['id']);
+                $childProduct = Product::find($child['children_product']['id']);
                 if($childProduct){
                     Product_children::create([
                         'product_id' => $product->id,
-                        'children_product_id' => $child['id'],
+                        'children_product_id' => $child['children_product']['id'],
                     ]);
                 } else {
-                    \Log::warning("Child product ID {$child['id']} does not exist.");
+                    \Log::warning("Child product ID {$child['children_product']['id']} does not exist.");
                 }
             }
         }
