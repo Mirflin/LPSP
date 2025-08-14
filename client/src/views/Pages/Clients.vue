@@ -8,7 +8,7 @@ import flatPickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
 import moment from 'moment'
 import { useAuthStore } from '../../storage/auth'
-import echo from '@/Echo.js'
+import {createEcho} from '@/Echo.js'
 
 
 const clientsStore = useClientsStore()
@@ -54,6 +54,8 @@ const cols = [
   { field: 'updated_at', title: 'Updated at', hide: true },
   { field: 'created_at', title: 'Created at', hide: true },
 ]
+
+const echo = createEcho()
 
 onMounted(() => {
   fetch()

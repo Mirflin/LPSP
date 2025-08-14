@@ -12,6 +12,8 @@ use App\Models\Client;
 use Illuminate\Support\Facades\Log;
 use App\Models\Product_material;
 use App\Models\Product_children;
+use App\Models\File_list;
+use App\Models\File;
 use App\Models\Process;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
@@ -30,24 +32,39 @@ class ProductionController extends Controller
 
         $product = Product::find($id);
 
-        $product->materials = [];
-        $product->name = $product->drawing_nr;
-
         $client = Client::find($product->client_id);
-        $product->client = $client;
 
-        $materialRefs = Product_material::where('product_id', $product->id)->get();
+        $materials = Product_material::where('product_id', $product->id)->get()->map(function($ref){
+            return Material::find($ref->material_id);
+        });
 
-        $materials = [];
-        foreach ($materialRefs as $ref) {
-            $material = Material::find($ref->material_id);
-            if ($material) {
-                $materials[] = $material;
-            }
-        }
-        $product->setRelation('materials', collect($materials));
+        $files = File_list::where('product_id', $product->id)->get()->map(function($ref){
+            return File::find($ref->file_id);
+        });
 
-        return $product;
+        $childs = Product_children::where('product_id', $product->id)->get()->map(function($ref){
+            return Product::find($ref->file_id);
+        });
+
+        $newVal = [
+            'id' => $product->id,
+            'drawing_nr' => $product->drawing_nr,
+            'part_nr' => $product->part_nr,
+            'revision' => $product->revision,
+            'description' => $product->description,
+            'additional_info' => $product->additional_info,
+            'client_id' => $product->client_id,
+            'weight' => $product->weight,
+            'created_at' => $product->created_at,
+            'updated_at' => $product->updated_at,
+            'materials' => $materials,
+            'name' => $product->drawing_nr,
+            'client' => $client,
+            'files' => $files,
+            'childs' => $childs
+        ];
+
+        return $newVal;
     }
 
     public function createProduct(Request $request) {
@@ -77,10 +94,15 @@ class ProductionController extends Controller
 
         if(!empty($validated['childs'])){
             foreach($validated['childs'] as $child){
-                Product_children::create([
-                    'product_id' => $product->id,
-                    'children_product_id' => $child['id'],
-                ]);
+                $childProduct = Product::find($child['id']);
+                if($childProduct){
+                    Product_children::create([
+                        'product_id' => $product->id,
+                        'children_product_id' => $child['id'],
+                    ]);
+                } else {
+                    \Log::warning("Child product ID {$child['id']} does not exist.");
+                }
             }
         }
 
@@ -127,23 +149,39 @@ class ProductionController extends Controller
                 );
 
                 $full_path = ('products/'.$validated['client']['name'].'/'.$validated['drawing_nr'].'/');
-
+                $fType = 3;
                 if($file['drawing'] == false && $file['bom'] == false){
                     $full_path = ('products/'.$validated['client']['name'].'/'.$validated['drawing_nr'].'/other'.'/');
                 }elseif($file['drawing']){
+                    $fType = 2;
                     $full_path = ('products/'.$validated['client']['name'].'/'.$validated['drawing_nr'].'/drawings'.'/');
                 }elseif($file['bom']){
+                    $fType = 1;
                     $full_path = ('products/'.$validated['client']['name'].'/'.$validated['drawing_nr'].'/BOM'.'/');
                 }
 
-                Storage::put($full_path, $uploadedFile);
+                $filename = $uploadedFile->getClientOriginalName();
+
+                Storage::disk('public')->putFileAs($full_path, $uploadedFile, $filename);
+
+                //Storage::put($full_path, $uploadedFile);
+
+                $fileDB = File::create([
+                    'name' => $file['name'],
+                    'type' => $fType,
+                    'path' => ($full_path.$file['name'])
+                ]);
+
+                File_list::create([
+                    'product_id' => $product->id,
+                    'file_id' => $fileDB->id
+                ]);
+
             }
             GoogleDrive::dispatch($validated['files'], ($validated['client']['name'].'/'.$validated['drawing_nr'].'/'));
         }
 
-        $newProd = $this->getProductById(intval($product->id));
-
-        Log::info($newProd);
+        $newProd = $this->getProductById($product->id);
 
         broadcast(new NewProduct($newProd))->toOthers();
 
@@ -211,27 +249,14 @@ class ProductionController extends Controller
         $products = Product::all();
         $process = Process_list::all();
 
+        $newList = [];
         foreach($products as $product){
-            $product->materials = [];
-            $product->name = $product->drawing_nr;
-
-            $client = Client::find($product->client_id);
-            $product->client = $client;
-
-
-            $materialRefs = Product_material::where('product_id', $product->id)->get();
-
-            $materials = [];
-            foreach ($materialRefs as $ref) {
-                $material = Material::find($ref->material_id);
-                if ($material) {
-                    $materials[] = $material;
-                }
-            }
-            $product->setRelation('materials', collect($materials));
+            $newProd = $this->getProductById($product->id);
+            array_push($newList, $newProd);
+            Log::info($newProd);
         }
 
-        return response()->json(['message' => 'data fetched!', 'materials' => $materials, 'plans' => $plans, 'products' => $products, 'processes' => $process], 200);
+        return response()->json(['message' => 'data fetched!', 'materials' => $materials, 'plans' => $plans, 'products' => $newList, 'processes' => $process], 200);
     }
 
     public function deleteMaterial($id){

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import {ref, computed, reactive} from 'vue';
 import axios from 'axios';
-import echo from '@/Echo.js'
+import {createEcho} from '@/Echo.js'
 
 export const useProductionStore = defineStore('production', () => {
     const products = ref([])
@@ -9,15 +9,15 @@ export const useProductionStore = defineStore('production', () => {
     const materials = ref()
     const processes = ref()
     let subscribed = false
-
+    const product_alert = ref(false)
     const materialsRef = ref()
-    
+    const echo = createEcho()
+
     if(!subscribed){
         let products_channel = echo.private('product')
         products_channel.listen(".newproduct", async (data) => {
-            console.log(data)
+            product_alert.value = true
             products.value.push(data.product)
-            console.log(products.value)
         })
         subscribed = true
     }
@@ -79,6 +79,7 @@ export const useProductionStore = defineStore('production', () => {
         plans,
         materials,
         processes,
+        product_alert,
         createMaterial,
         updateMaterial,
         deleteMaterials,

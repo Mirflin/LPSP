@@ -48,7 +48,18 @@ class GoogleDrive implements ShouldQueue
                 null,
                 true
             );
-            Gdrive::put(($this->path . $file['name']), $uploadedFile);
+
+            $full_path = $this->path;
+
+            if($file['drawing'] == false && $file['bom'] == false){
+                $full_path = ($this->path.'/other'.'/');
+            }elseif($file['drawing']){
+                $full_path = ($this->path.'/drawings'.'/');
+            }elseif($file['bom']){
+                $full_path = ($this->path.'/BOM'.'/');
+            }
+
+            Gdrive::put(($full_path . $file['name']), $uploadedFile);
         }
     }
 }

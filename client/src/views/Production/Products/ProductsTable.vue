@@ -40,7 +40,7 @@ const datatable = ref(null);
 const params = reactive({ current_page: 1, pagesize: 10, sort_column: 'id', sort_direction: 'asc', search: '' })
 
 const rows = computed(() => production.products)
-
+const total_rows = computed(() => production.products.length)
 const cols = ref(props.cols)
 
 const changeServer = (data) => {
@@ -86,9 +86,13 @@ const exportTable = (type) => {
         if (type === 'csv') {
             const plainData = records.map(item => {
                 delete item['name']
+                delete item.client_id
                 columns.forEach(colum => {
                     if(colum.hide){
                         delete item[colum.field]
+                    }
+                    if(colum.title == "Client"){
+                        item.client = item.client.name
                     }
                 });
                 if(isRef(item)) {
@@ -301,12 +305,15 @@ const rowClick = async (row) => {
             :hasCheckbox="true"
             :columns="cols"
             :loading="loading"
-            :pagination="false"
+            :pagination="true"
+            height="450px"
+            :totalRows="total_rows"
             :search="params.search"
             :sortColumn="params.sort_column"
             :sortDirection="params.sort_direction"
             :columnFilter="true"
             :stickyHeader="true"
+            pageSize="20"
             skin="bh-table-compact"
             class="table-test"
             :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer'"

@@ -29,7 +29,7 @@
               class="cursor-pointer w-20 h-20 opacity-0 absolute"
               ref="fileInput"
             />
-            <img :src=" auth.profile.image ? `http://192.168.88.39:8000/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'" />
+            <img :src=" auth.profile.image ? `http://192.168.88.45:8000/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'" />
           </div>
           <div class="order-3 xl:order-2">
             <h4

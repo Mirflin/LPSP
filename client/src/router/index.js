@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/storage/auth.js';
 import { createRouter, createWebHistory } from 'vue-router'
+import { useProductionStore } from '../storage/production';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -230,6 +231,7 @@ const router = createRouter({
 
 router.beforeEach(async (to , from, next) => {
   const auth = useAuthStore()
+  const production = useProductionStore()
 
   if(!auth.isAuthResolved){
     await auth.attempt()

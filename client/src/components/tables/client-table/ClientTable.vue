@@ -1,6 +1,6 @@
 <script setup> 
 
-import { computed, defineProps, ref, toRaw, reactive, watch, watchEffect, isReactive, isRef, unref } from 'vue'
+import { computed, defineProps, ref, toRaw, reactive, watch, watchEffect, isReactive, isRef, unref, onMounted } from 'vue'
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 import { useClientsStore } from '@/storage/clients'

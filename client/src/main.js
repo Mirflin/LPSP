@@ -18,13 +18,12 @@ import Vueform from '@vueform/vueform'
 import vueformConfig from './../vueform.config'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
-
 import Checkbox from 'primevue/checkbox';
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
-axios.defaults.baseURL = "http://192.168.88.38:8000";
+axios.defaults.baseURL = "http://192.168.88.45:8000";
 
 const app = createApp(App)
 const store = createPinia()
