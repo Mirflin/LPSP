@@ -7,6 +7,7 @@ use App\Http\Controllers\LPSPcreds;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProductionController;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Log;
 
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
@@ -63,3 +64,18 @@ Route::delete('/product/{id}', [ProductionController::class, 'deleteProduct'])
 Route::post('/product-create', [ProductionController::class, 'createProduct'])
     ->middleware('auth:sanctum')
     ->name('production.product.create');
+
+Route::patch('/product-update', [ProductionController::class, 'updateProduct'])
+    ->middleware('auth:sanctum')
+    ->name('production.product.update');
+
+
+Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+
+    if (!file_exists($fullPath)) {
+        return response()->json(['error' => 'File not found'], 404);
+    }
+
+    return response()->download($fullPath);
+})->where('path', '.*');

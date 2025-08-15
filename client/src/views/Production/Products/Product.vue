@@ -8,22 +8,6 @@ import { useAuthStore } from '@/storage/auth'
 import ProductsTable from './ProductsTable.vue'
 import {useClientsStore} from '@/storage/clients.js'
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
 import TimedAlert from '@/components/TimedAlert.vue'
 import ProductInfo from './ProductInfo.vue'
 
@@ -56,9 +40,10 @@ watch(
 
 onMounted(async() => {
   loading.value = true
-  if(production.products.lenght <= 0){
+  if(production.products.lenght <= 0 || !production.materials || !production.processes){
     fetch()
   }
+  await clients.fetchClients()
   loading.value = false
 })
 
@@ -87,6 +72,7 @@ const update_row = (updated_row) => {
   openModalView.value = true
 }
 
+
 const currentPageTitle = 'Products'
 </script>
 
@@ -101,7 +87,7 @@ const currentPageTitle = 'Products'
 
       <Modal v-if="openModalView">
         <template #body>
-          <ProductInfo @close="openModalView = false" :product="row"></ProductInfo>
+          <ProductInfo @update="update_row" @close="openModalView = false" @open="openModalView = true" :product="row"></ProductInfo>
         </template>
       </Modal>
 

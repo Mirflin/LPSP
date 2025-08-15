@@ -43,7 +43,12 @@ class ProductionController extends Controller
         });
 
         $childs = Product_children::where('product_id', $product->id)->get()->map(function($ref){
-            return Product::find($ref->file_id);
+            return Product::find($ref->children_product_id);
+        });
+
+        $processes = Process::where('product_id', $product->id)->get()->map(function($ref){
+            $ref['process_name'] = Process_list::find($ref->process_id)->name;
+            return $ref;
         });
 
         $newVal = [
@@ -59,6 +64,7 @@ class ProductionController extends Controller
             'updated_at' => $product->updated_at,
             'materials' => $materials,
             'name' => $product->drawing_nr,
+            'processes' => $processes,
             'client' => $client,
             'files' => $files,
             'childs' => $childs
@@ -124,7 +130,7 @@ class ProductionController extends Controller
             foreach($validated['processes'] as $process){
                 Process::create([
                     'place' => $process['id'],
-                    'sub_process' => $process['id'],
+                    'sub_process' => $process['subprocess'],
                     'product_id' => $product->id,
                     'process_id' => $process['process']['id']
                 ]);
@@ -253,7 +259,6 @@ class ProductionController extends Controller
         foreach($products as $product){
             $newProd = $this->getProductById($product->id);
             array_push($newList, $newProd);
-            Log::info($newProd);
         }
 
         return response()->json(['message' => 'data fetched!', 'materials' => $materials, 'plans' => $plans, 'products' => $newList, 'processes' => $process], 200);
@@ -273,6 +278,69 @@ class ProductionController extends Controller
         $material->delete();
 
         return response()->json(['message' => 'Material deleted successfully'], 204);
+    }
+
+    public function downloadImage(Request $request){
+
+
+        $fullPath = storage_path('storage/' . $request->path);
+        if (!file_exists($fullPath)) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+        return response()->download($fullPath);
+    }
+
+    public function updateProduct(Request $request){
+        $validated = $request->validate([
+            'id' => 'required|numeric',
+            'drawing_nr' => 'required|string',
+            'part_nr' => 'required|string',
+            'revision' => 'nullable|string',
+            'description' => 'nullable|string',
+            'additional_info' => 'nullable|string',
+            'client' => 'nullable|array',
+            'files' => 'nullable|array',
+            'materials' => 'required|array',
+            'childs' => 'nullable',
+            'processes' => 'required|array',
+            'weight' => 'nullable|numeric'
+        ]);
+
+        $product = Product::where('drawing_nr', $validated['drawing_nr'])->get();
+        $product->part_nr = $validated['part_nr'];
+        $product->revision = $validated['revision'];
+        $product->description = $validated['description'];
+        $product->additional_info = $validated['additional_info'];
+        $product->weight = $validated['weight'];
+        $product->save();
+
+        $files = File_list::where('product_id', $product->id)->get()->map(function($ref){
+            return File::find($ref->file_id);
+        });
+
+        foreach($validated['files'] as $newFile){
+            foreach($files as $file){
+                if($file['id'] == $newFile['id']){
+                    $file['type'] = $newFile['type'];
+                }
+            }
+        }
+        $files->save();
+
+        $materials = Product_material::where('product_id', $product->id)->get()->map(function($ref){
+            return Material::find($ref->material_id);
+        });
+
+        foreach($validated['materials'] as $newMaterial){
+            foreach($materials as $material){
+                if($material['id'] == $newMaterial['id']){
+                    $material['name'] = $newMaterial['name'];
+                }
+            }
+        }
+        $materials->save();
+
+        
     }
 
 }

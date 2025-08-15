@@ -74,6 +74,16 @@ export const useProductionStore = defineStore('production', () => {
         }
     }
 
+    const updateRow = async(row) => {
+        try{
+            await axios.patch('/api/product-update', row)
+            return null
+        } catch(error) {
+            console.log(error)
+            return error
+        }
+    }
+
     return{
         products,
         plans,
@@ -85,6 +95,7 @@ export const useProductionStore = defineStore('production', () => {
         deleteMaterials,
         deleteProducts,
         fetch,
+        updateRow,
     }
 }, {
     persist: true
