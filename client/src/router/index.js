@@ -193,7 +193,7 @@ const router = createRouter({
     {
       path: '/plan',
       name: 'Plan',
-      component: () => import('../views/Production/Plan.vue'),
+      component: () => import('../views/Production/Plan/Plan.vue'),
       meta: {
         title: 'Plan',
         requireAuth: true

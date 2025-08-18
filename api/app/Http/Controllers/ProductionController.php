@@ -47,7 +47,7 @@ class ProductionController extends Controller
         });
 
         $processes = Process::where('product_id', $product->id)->get()->map(function($ref){
-            $ref['process_name'] = Process_list::find($ref->process_id)->name;
+            $ref['name'] = Process_list::find($ref->process_id)->name;
             return $ref;
         });
 
@@ -341,6 +341,42 @@ class ProductionController extends Controller
         $materials->save();
 
         
+    }
+
+    public function getPlans(Request $request)
+    {
+        $perPage = $request->input('perPage', 10);
+        $page = $request->input('page', 1);
+        $sort = $request->input('sort', 'id');
+        $direction = $request->input('direction', 'asc');
+        $search = $request->input('search', '');
+
+        $query = Plan::with([
+            'client',
+            'user',
+            'product.processes.processList',
+        ]);
+        
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('po_nr', 'like', "%{$search}%")
+                  ->orWhereHas('client', fn($cq) => $cq->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('user', fn($uq) => $uq->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('product', fn($pq) => $pq->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        $total = $query->count();
+
+        $plans = $query->orderBy($sort, $direction)
+                       ->skip(($page - 1) * $perPage)
+                       ->take($perPage)
+                       ->get();
+
+        return response()->json([
+            'data' => $plans,
+            'total' => $total,
+        ]);
     }
 
 }

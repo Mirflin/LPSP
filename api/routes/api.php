@@ -69,6 +69,9 @@ Route::patch('/product-update', [ProductionController::class, 'updateProduct'])
     ->middleware('auth:sanctum')
     ->name('production.product.update');
 
+Route::get('/plans', [ProductionController::class, 'getPlans'])
+    ->middleware('auth:sanctum')
+    ->name('production.plan.fetch');
 
 Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);

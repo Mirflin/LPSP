@@ -16,8 +16,13 @@ class Product extends Model
         'weight'
     ];
 
-    public function material_list()
+    public function processes()
     {
-        return $this->belongsTo(Product_material::class);
+        return $this->hasMany(Process::class);
+    }
+
+    public function plans()
+    {
+        return $this->hasMany(Plan::class);
     }
 }

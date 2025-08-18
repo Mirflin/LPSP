@@ -22,4 +22,9 @@ class Client extends Model
         'email',
         'payment_term',
     ];
+
+    public function plans()
+    {
+        return $this->hasMany(Plan::class);
+    }
 }

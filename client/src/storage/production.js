@@ -12,6 +12,7 @@ export const useProductionStore = defineStore('production', () => {
     const product_alert = ref(false)
     const materialsRef = ref()
     const echo = createEcho()
+    const total = ref(0)
 
     if(!subscribed){
         let products_channel = echo.private('product')
@@ -22,11 +23,21 @@ export const useProductionStore = defineStore('production', () => {
         subscribed = true
     }
 
+    const fetchPlan = async (params) => {
+        try {
+            const res = await axios.get("/api/plans", { params })
+            plans.value = res.data.data
+            total.value = res.data.total
+        } catch (err) {
+            console.error("Failed to fetch plan:", err)
+            throw err
+      }
+    }
+
     const fetch = async () => {
         try {
             const response = await axios.get('/api/production');
             products.value = response.data.products;
-            plans.value = response.data.plans;
             materials.value = response.data.materials;
             processes.value = response.data.processes
         } catch (error) {
@@ -87,6 +98,7 @@ export const useProductionStore = defineStore('production', () => {
     return{
         products,
         plans,
+        total,
         materials,
         processes,
         product_alert,
@@ -95,6 +107,7 @@ export const useProductionStore = defineStore('production', () => {
         deleteMaterials,
         deleteProducts,
         fetch,
+        fetchPlan,
         updateRow,
     }
 }, {

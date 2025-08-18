@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import ProductInfoInput from "./ProductInfoInput.vue"
 
 const production = useProductionStore()
 const emit = defineEmits(['close','open', 'update'])
@@ -51,6 +52,8 @@ const alert_message = ref()
 const alert_type = ref()
 
 const loading = ref(false)
+
+const process_id = ref()
 
 const goTo = (row) => {
     const newRow = production.products.find(product => product.id === row.id);
@@ -88,10 +91,14 @@ const updateServer = () => {
     }
 }
 
-const changeProcName = () => {
-    production.processes.forEach(process => {
-        if(process.id == production.process)
-    });
+const updateProcess = (index) => {
+  const selectedId = process_id.value
+  console.log(props.product.processes[index])
+  const found = production.processes.find(p => p.id === selectedId)
+  if (found) {
+    props.product.processes[index].name = found.name
+    props.product.processes[index].process_id = found.id
+  }
 }
 
 </script>
@@ -219,33 +226,7 @@ const changeProcName = () => {
             <TabsContent value="processes">
                 <div class="overflow-auto h-150">
                     <div v-for="(process , index) in props.product.processes" class="flex flex-col gap-5 wrap">
-                        <div class="flex gap-2 text-lg mt-5 items-center">
-                            <Label class="w-20">#{{ index+1 }} </Label>
-
-                            <Label class="w-20">Process: </Label>
-                            <p v-if="!editMode" class="flex-1 justify-start">{{ process.process_name }}</p>
-
-                            <Select v-model="process.id" v-else required>
-                                <SelectTrigger class="w-[180px]">
-                                    <SelectValue placeholder="Select a process" />
-                                </SelectTrigger>
-                                <SelectContent class="selcontent z-[100000]" positionStrategy="absolute">
-                                    <SelectGroup>
-                                        <SelectLabel>Processes</SelectLabel>
-                                        <div v-for="process in production.processes">
-                                            <SelectItem @click="changeProcName" :value="process.id" class="cursor-pointer">
-                                                {{process.name}}
-                                            </SelectItem>
-                                        </div>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-
-                            <Label class="w-25">Sub-process: </Label>
-                            <p v-if="!editMode" class="flex-1 justify-start">{{ process.sub_process }}</p>
-                            <Input class="w-70" v-else v-model="process.sub_process"></Input>
-                        </div>
-                        <Separator></Separator>
+                        <ProductInfoInput :prod_process="process" :editMode="editMode"></ProductInfoInput>
                     </div>
                 </div>
             </TabsContent>
@@ -304,17 +285,17 @@ const changeProcName = () => {
             </TabsContent>
 
         </Tabs>
-        <div @click="emit('close'); editMode = false" class="absolute right-10 top-10 text-red-500 w-10 h-10 cursor-pointer hover:text-red-400">
+        <div @click="emit('close'); editMode = false" class="fixed right-10 top-10 text-red-500 w-10 h-10 cursor-pointer hover:text-red-400">
             <CircleX size={10}></CircleX>
         </div>
-        <div class="absolute bottom-10 left-10 text-red-500 w-10 h-10 hover:text-red-400">
-            <Button v-if="!loading" @click="updateServer" class="cursor-pointer" :class="editMode ? 'bg-green-400 hover:bg-green-200' : 'bg-red-400 hover:bg-red-200'">{{editMode ? 'Save changes' : 'Edit mode'}}</Button>
+        <div class="fixed bottom-10 left-10 text-red-500 w-10 h-10 hover:text-red-400">
+            <Button disabled v-if="!loading" @click="updateServer" class="cursor-pointer" :class="editMode ? 'bg-green-400 hover:bg-green-200' : 'bg-red-400 hover:bg-red-200'">{{editMode ? 'Save changes' : 'Edit mode'}}</Button>
             <Button v-else  :class="editMode ? 'bg-green-400 hover:bg-green-200' : 'bg-red-400 hover:bg-red-200'">Loading...</Button>
         </div>
-        <div @click="editMode = false; emit('update', parrent); parrent = null; tab = 'general'" v-if="parrent" class="absolute bottom-10 left-50 text-red-500 w-10 h-10 cursor-pointer hover:text-red-400">
+        <div @click="editMode = false; emit('update', parrent); parrent = null; tab = 'general'" v-if="parrent" class="fixed bottom-10 left-50 text-red-500 w-10 h-10 cursor-pointer hover:text-red-400">
             <Button class="bg-blue-400 hover:bg-blue-300">Go back to parrent</Button>
         </div>
-        <div class="absolute bottom-10 right-10">
+        <div class="fixed bottom-10 right-10">
             {{ props.product.id ?? '-' }}
         </div>
     </div>

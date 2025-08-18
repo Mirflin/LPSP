@@ -14,4 +14,14 @@ class Process extends Model
         'price',
         'additional_price',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function processList()
+    {
+        return $this->belongsTo(ProcessList::class, 'process_id');
+    }
 }

@@ -19,7 +19,7 @@ const deleteFile = () => {
 
 const downloadFile = async () => {
     try {
-        const url = `http://192.168.88.48:8000/api/download/${encodeURIComponent(props.file_obj.path)}`;
+        const url = `http://192.168.88.39:8000/api/download/${encodeURIComponent(props.file_obj.path)}`;
 
         const response = await axios.get(url, {
             responseType: "blob",
