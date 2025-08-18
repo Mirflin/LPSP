@@ -129,7 +129,7 @@ const changeServer = (data) => {
             :search="params.search"
             :sortColumn="params.sort_column"
             :sortDirection="params.sort_direction"
-            :serverMode="true"
+            :isServerMode="true"
             @change="changeServer"
         >
             <template #created_at="data">

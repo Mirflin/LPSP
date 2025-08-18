@@ -109,11 +109,11 @@ const updateProcess = (index) => {
         :message="alert_message"
     />
     <div
-        class="no-scrollbar relative w-full max-w-[1200px] h-2/3 overflow-y-auto rounded-3xl bg-white p-2 mr-5 ml-5 dark:bg-gray-900 lg:p-11"
+        class="relative w-full max-w-[1200px] h-2/3 overflow-y-auto rounded-3xl bg-white p-2 mr-5 ml-5 dark:bg-gray-900 lg:p-11"
     >
-        <Tabs v-model="tab" class="w-full" v-auto-animate>
+        <Tabs v-model="tab" class="w-full p-3" v-auto-animate>
 
-            <TabsList class="w-1/2 gap-2 h-10">
+            <TabsList class="w-full gap-2 h-10">
                 <TabsTrigger value="general">
                     General
                 </TabsTrigger>
@@ -155,7 +155,8 @@ const updateProcess = (index) => {
                     <p class="flex-1 justify-start" v-if="!editMode">{{ props.product.weight }}</p>
                     <Input v-else v-model="props.product.weight"></Input>
                 </div>
-                <div class="flex gap-2 text-lg mt-5">
+                <Separator />
+                <div class="flex gap-2 text-lg mt-5 items-start">
                     <Label class="w-60">Description: </Label>
                     <textarea v-model="props.product.description" class="flex-1 justify-start items-start p-2" :class="editMode ? 'border-1' : ''" :readonly="!editMode" placeholder="-"></textarea>
                 </div>
@@ -209,7 +210,7 @@ const updateProcess = (index) => {
             </TabsContent>
 
             <TabsContent value="materials">
-                <div class="overflow-auto h-150">
+                <div class="overflow-auto max-h-150">
                     <div v-for="material in props.product.materials" class="flex flex-col gap-5 wrap">
                         <div class="flex gap-2 text-lg mt-5 items-center">
                             <Label class="w-20">Id: </Label>

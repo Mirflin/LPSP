@@ -12,4 +12,9 @@ class File extends Model
         'type',
         'path',
     ];
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'file_lists', 'file_id', 'product_id');
+    }
 }

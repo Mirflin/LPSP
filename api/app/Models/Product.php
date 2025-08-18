@@ -25,4 +25,24 @@ class Product extends Model
     {
         return $this->hasMany(Plan::class);
     }
+
+    public function materials()
+    {
+        return $this->belongsToMany(Material::class, 'product_materials', 'product_id', 'material_id');
+    }
+
+    public function children()
+    {
+        return $this->belongsToMany(Product::class, 'product_childrens', 'product_id', 'children_product_id');
+    }
+
+    public function files()
+    {
+        return $this->belongsToMany(File::class, 'file_lists', 'product_id', 'file_id');
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
 }

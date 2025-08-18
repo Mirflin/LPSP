@@ -22,6 +22,6 @@ class Process extends Model
 
     public function processList()
     {
-        return $this->belongsTo(ProcessList::class, 'process_id');
+        return $this->belongsTo(Process_list::class, 'process_id');
     }
 }

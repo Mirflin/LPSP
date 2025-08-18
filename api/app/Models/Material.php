@@ -12,4 +12,9 @@ class Material extends Model
         'name',
         'description',
     ];
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_materials', 'material_id', 'product_id');
+    }
 }

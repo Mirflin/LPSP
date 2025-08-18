@@ -251,17 +251,9 @@ class ProductionController extends Controller
         }
 
         $materials = Material::all();
-        $plans = Plan::all();
-        $products = Product::all();
         $process = Process_list::all();
 
-        $newList = [];
-        foreach($products as $product){
-            $newProd = $this->getProductById($product->id);
-            array_push($newList, $newProd);
-        }
-
-        return response()->json(['message' => 'data fetched!', 'materials' => $materials, 'plans' => $plans, 'products' => $newList, 'processes' => $process], 200);
+        return response()->json(['message' => 'data fetched!', 'materials' => $materials, 'processes' => $process], 200);
     }
 
     public function deleteMaterial($id){
@@ -356,7 +348,7 @@ class ProductionController extends Controller
             'user',
             'product.processes.processList',
         ]);
-        
+
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('po_nr', 'like', "%{$search}%")
@@ -375,6 +367,65 @@ class ProductionController extends Controller
 
         return response()->json([
             'data' => $plans,
+            'total' => $total,
+        ]);
+    }
+
+    public function getProducts(Request $request)
+    {
+        $perPage = $request->input('perPage', 10);
+        $page = $request->input('page', 1);
+        $sort = $request->input('sort', 'id');
+        $direction = $request->input('direction', 'asc');
+        $search = $request->input('search', '');
+
+        $query = Product::with([
+            'client',                      
+            'processes.processList',        
+            'materials',                   
+            'children',                     
+            'files',                        
+        ]);
+        
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                ->orWhere('drawing_nr', 'like', "%{$search}%")
+                ->orWhere('part_nr', 'like', "%{$search}%")
+                ->orWhere('revision', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhere('additional_info', 'like', "%{$search}%")
+                ->orWhere('weight', 'like', "%{$search}%")
+                ->orWhere('created_at', 'like', "%{$search}%")
+                ->orWhere('updated_at', 'like', "%{$search}%")
+                ->orWhereHas('client', fn($cq) => 
+                    $cq->where('name', 'like', "%{$search}%")
+                );
+            });
+        }
+
+        $total = $query->count();
+
+        $sortableColumns = [
+            'id', 'drawing_nr', 'part_nr', 'revision',
+            'description', 'additional_info', 'weight',
+            'created_at', 'updated_at'
+        ];
+
+        if (in_array($sort, $sortableColumns)) {
+            $query->orderBy($sort, $direction);
+        } elseif ($sort === 'client.name') {
+            $query->join('clients', 'products.client_id', '=', 'clients.id')
+                ->orderBy('clients.name', $direction)
+                ->select('products.*');
+        }
+
+        $products = $query->skip(($page - 1) * $perPage)
+                      ->take($perPage)
+                      ->get();
+
+        return response()->json([
+            'data' => $products,
             'total' => $total,
         ]);
     }

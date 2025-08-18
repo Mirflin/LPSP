@@ -25,10 +25,10 @@ const props = defineProps(['prod_process', 'editMode'])
 
 <template>
     <div class="flex gap-2 text-lg mt-5 items-center">
-        <Label class="w-20">#{{ prod_process.spot }} </Label>
+        <Label class="w-20">#{{ prod_process.place }} </Label>
 
         <Label class="w-20">Process: </Label>
-        <p v-if="!props.editMode" class="flex-1 justify-start">{{ prod_process.name }}</p>
+        <p v-if="!props.editMode" class="flex-1 justify-start">{{ prod_process.process_list.name }}</p>
 
         <Select v-model="prod_process.id" @update:modelValue="updateProcess(prod_process.id)" v-else required>
             <SelectTrigger class="w-[180px]">
