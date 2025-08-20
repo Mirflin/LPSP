@@ -335,6 +335,60 @@ class ProductionController extends Controller
         
     }
 
+    public function getProduct(Request $request) {
+        if(Auth::user()->permission != 1){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'id' => 'required|numeric',
+        ]);
+
+        $query = Product::with([
+            'client',                      
+            'processes.processList',        
+            'materials',                   
+            'children',                     
+            'files',                        
+        ]);
+
+        $query->where('id', $validated['id']);
+        Log::info($validated['id']);
+        $product = $query->first();
+
+        if(!$product){
+            return response()->json([['message' => 'Product not found!']]);
+        }
+
+        return response()->json(['message' => 'Product founded', 'data' => $product]);
+
+    }
+
+    public function getProductbyName(Request $request) {
+        if(Auth::user()->permission != 1){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $query = Product::with([
+            'client',                      
+            'processes.processList',        
+            'materials',                   
+            'children',                     
+            'files',                        
+        ]);
+        $search = $request->input('drawing_nr', '');
+
+        $query->where('drawing_nr', 'like', "%{$search}%");
+        $product = $query->take(10)->get();
+
+        if(!$product){
+            return response()->json([['message' => 'Product not found!']]);
+        }
+
+        return response()->json(['message' => 'Product founded', 'data' => $product]);
+
+    }
+
     public function getPlans(Request $request)
     {
         $perPage = $request->input('perPage', 10);
@@ -349,21 +403,55 @@ class ProductionController extends Controller
             'product.processes.processList',
         ]);
 
+        $map = [
+            0 => 'Pending',
+            1 => 'In Production',
+            2 => 'Completed',
+            3 => 'Cancelled',
+        ];
+
+        $reverseMap = array_change_key_case(array_flip($map), CASE_LOWER);
+
+        $map = [
+            0 => 'Not Outsourced',
+            1 => 'Waiting Supplier',
+            2 => 'Delivered',
+            3 => 'Cancelled'
+        ];
+
+        $OutreverseMap = array_change_key_case(array_flip($map), CASE_LOWER);
+        
         if ($search) {
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search, $reverseMap, $OutreverseMap) {
+
                 $q->where('po_nr', 'like', "%{$search}%")
-                  ->orWhereHas('client', fn($cq) => $cq->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('user', fn($uq) => $uq->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('product', fn($pq) => $pq->where('name', 'like', "%{$search}%"));
+                ->orWhere('po_date', 'like', "%{$search}%")
+                ->orWhere('total', 'like', "%{$search}%")
+                ->orWhere('invoice', 'like', "%{$search}%");
+
+
+                $q->orWhereHas('user', fn($uq) => $uq->where('name', 'like', "%{$search}%"))
+                ->orWhereHas('client', fn($cq) => $cq->where('name', 'like', "%{$search}%"))
+                ->orWhereHas('product', fn($pq) => $pq->where('drawing_nr', 'like', "%{$search}%"));
+
+                $searchLower = strtolower($search);
+                foreach ($reverseMap as $label => $num) {
+                    if (str_contains($label, $searchLower)) {
+                        $q->orWhere('statuss', $num);
+                    }
+                }
+
+                foreach ($OutreverseMap as $label => $num) {
+                    if (str_contains($label, $searchLower)) {
+                        $q->orWhere('outsource_statuss', $num);
+                    }
+                }
             });
         }
 
         $total = $query->count();
 
-        $plans = $query->orderBy($sort, $direction)
-                       ->skip(($page - 1) * $perPage)
-                       ->take($perPage)
-                       ->get();
+        $plans = $query->get();
 
         return response()->json([
             'data' => $plans,

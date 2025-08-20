@@ -52,15 +52,21 @@ const alert_message = ref()
 const alert_type = ref()
 
 const loading = ref(false)
+const childs_loading = ref(false)
 
 const process_id = ref()
 
-const goTo = (row) => {
-    const newRow = production.products.find(product => product.id === row.id);
+const goTo = async(row) => {
+    childs_loading.value = true
+    
+    const res = await production.getProductById(row.id)
+    const newRow = res.data.data
+
     emit('update', newRow)
     parrent.value = props.product
     tab.value = 'general'
-    console.log(props.product)
+
+    childs_loading.value = false
 }
 
 const updateServer = () => {
@@ -235,7 +241,7 @@ const updateProcess = (index) => {
             <TabsContent value="files">
                 <p class="flex justify-center items-center mt-10" v-if="props.product.files.length < 1">No files uploaded</p>
 
-                <div class="overflow-auto h-150" v-else>
+                <div class="overflow-auto max-h-150" v-else>
                     <div @click="showDrawings = !showDrawings" class="flex gap-2 justify-start w-auto cursor-pointer mt-10 items-center" v-auto-animate>
                         <h2 class="text-lg">Drawings</h2>
                         <ChevronDown v-if="showDrawings"></ChevronDown>
@@ -277,17 +283,32 @@ const updateProcess = (index) => {
             </TabsContent>
 
             <TabsContent value="subproducts">
-                <p class="flex justify-center items-center mt-10" v-if="props.product.childs.length < 1">No childs selected</p>
-                <div class="overflow-auto h-150" v-else>
-                    <div v-for="child in props.product.childs">
-                        <ProductChilds @goto="goTo" :child="child"></ProductChilds>
+                <div v-if="!childs_loading">
+                    <p class="flex justify-center items-center mt-10" v-if="!props.product.children || props.product.children.length < 1">No childs selected</p>
+                    <div class="overflow-auto h-150" v-else>
+                        <div v-for="child in props.product.children">
+                            <ProductChilds @goto="goTo" :child="child"></ProductChilds>
+                        </div>
+                    </div>
+                </div>
+                <div 
+                    v-else
+                    class="flex-col gap-4 w-full flex items-center justify-center scale-50 mb-15"
+                >
+                    <div
+                        class="w-20 h-20 border-4 border-transparent text-blue-400 text-4xl animate-spin flex items-center justify-center border-t-blue-400 rounded-full"
+                    >
+                        <div
+                            class="w-16 h-16 border-4 border-transparent text-red-400 text-2xl animate-spin flex items-center justify-center border-t-red-400 rounded-full"
+                        >
+                        </div>
                     </div>
                 </div>
             </TabsContent>
 
         </Tabs>
         <div @click="emit('close'); editMode = false" class="fixed right-10 top-10 text-red-500 w-10 h-10 cursor-pointer hover:text-red-400">
-            <CircleX size={10}></CircleX>
+            <CircleX size="40"></CircleX>
         </div>
         <div class="fixed bottom-10 left-10 text-red-500 w-10 h-10 hover:text-red-400">
             <Button disabled v-if="!loading" @click="updateServer" class="cursor-pointer" :class="editMode ? 'bg-green-400 hover:bg-green-200' : 'bg-red-400 hover:bg-red-200'">{{editMode ? 'Save changes' : 'Edit mode'}}</Button>

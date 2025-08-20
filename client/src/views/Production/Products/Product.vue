@@ -15,7 +15,7 @@ import Vue3Datatable from '@bhplugin/vue3-datatable'
 import { read, writeFileXLSX, } from "xlsx";
 import XLSX from "xlsx"
 import PlusIcon from '@/icons/PlusIcon.vue'
-
+import {useProductCreate} from '@/storage/product_create.js'
 
 const production = useProductionStore()
 const loading = ref(false)
@@ -28,6 +28,10 @@ const total_rows = ref(0)
 const openModalView = ref()
 const isOpen = ref(false)
 
+const searchInput = ref("")
+const productStore = useProductCreate()
+let timeout = null
+
 const datatable = ref()
 const params = reactive({
   current_page: 1,
@@ -37,8 +41,16 @@ const params = reactive({
   search: ""
 })
 
+watch(searchInput, (newValue) => {
+  clearTimeout(timeout)
+  timeout = setTimeout(() => {
+    params.search = newValue
+  }, 700)
+})
+
 onMounted(async() => {
   production.fetch()
+  clients.fetchClients()
   await fetchData()
 })
 
@@ -217,7 +229,7 @@ const currentPageTitle = 'Products'
               </button>
               <input
                 type="text"
-                v-model="params.search"
+                v-model="searchInput  "
                 placeholder="Global search"
                 class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
               />

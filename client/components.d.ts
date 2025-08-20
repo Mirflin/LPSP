@@ -24,7 +24,7 @@ declare module 'vue' {
     AppSidebar: typeof import('./src/components/layout/AppSidebar.vue')['default']
     Avatar: typeof import('./src/components/ui/Avatar.vue')['default']
     Backdrop: typeof import('./src/components/layout/Backdrop.vue')['default']
-    Badge: typeof import('./src/components/ui/Badge.vue')['default']
+    Badge: typeof import('./src/components/ui/badge/Badge.vue')['default']
     BarChartOne: typeof import('./src/components/charts/BarChart/BarChartOne.vue')['default']
     BasicTableOne: typeof import('./src/components/tables/basic-tables/BasicTableOne.vue')['default']
     Button: typeof import('./src/components/ui/button/Button.vue')['default']

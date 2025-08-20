@@ -23,7 +23,7 @@ import Checkbox from 'primevue/checkbox';
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
-axios.defaults.baseURL = "http://192.168.88.39:8000";
+axios.defaults.baseURL = import.meta.env.VITE_APP_URL;
 
 const app = createApp(App)
 const store = createPinia()

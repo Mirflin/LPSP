@@ -37,6 +37,16 @@ export const useProductionStore = defineStore('production', () => {
         }
     }
 
+    const getProductById = async (id) => {
+        try {
+            const res = await axios.post("/api/product-by-id", {'id': id})
+            return res
+        } catch (err) {
+            console.error("Failed to fetch product:", err)
+            throw err
+        }
+    }
+
     const fetch = async () => {
         try {
             const response = await axios.get('/api/production');
@@ -111,6 +121,7 @@ export const useProductionStore = defineStore('production', () => {
         deleteProducts,
         fetch,
         fetchPlan,
+        getProductById,
         fetchProducts,
         updateRow,
     }

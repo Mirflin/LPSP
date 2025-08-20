@@ -77,6 +77,14 @@ Route::get('/products', [ProductionController::class, 'getProducts'])
     ->middleware('auth:sanctum')
     ->name('production.products.fetch');
 
+Route::post('/product-by-id', [ProductionController::class, 'getProduct'])
+    ->middleware('auth:sanctum')
+    ->name('production.product.get');
+
+Route::post('/product-by-name', [ProductionController::class, 'getProductbyName'])
+    ->middleware('auth:sanctum')
+    ->name('production.product.getbyname');
+
 Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);
 

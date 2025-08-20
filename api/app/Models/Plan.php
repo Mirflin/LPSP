@@ -59,8 +59,8 @@ class Plan extends Model
         $map = [
             0 => 'Not Outsourced',
             1 => 'Waiting Supplier',
-            2 => 'In Outsourcing',
-            3 => 'Delivered',
+            2 => 'Delivered',
+            3 => 'Outsource Cancelled'
         ];
 
         return $map[$this->outsource_statuss] ?? 'Unknown';

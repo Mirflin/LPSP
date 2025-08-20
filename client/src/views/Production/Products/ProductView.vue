@@ -45,6 +45,13 @@ watch(step, () => {
     selectedComponent.value = componentMap[step.value]
 })
 
+onMounted(async() => {
+    if(!clients.clients || !production.materials){
+        clients.fetchClients()
+        production.fetch()
+    }
+})
+
 const increase = () => {
     step.value = step.value + 1
 }

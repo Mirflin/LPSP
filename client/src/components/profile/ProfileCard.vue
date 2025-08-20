@@ -29,7 +29,7 @@
               class="cursor-pointer w-20 h-20 opacity-0 absolute"
               ref="fileInput"
             />
-            <img :src=" auth.profile.image ? `http://192.168.88.39:8000/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'" />
+            <img :src=" auth.profile.image ? app_url+`/storage/${auth.profile.image}` : '/avatar_placeholder.jpg'" />
           </div>
           <div class="order-3 xl:order-2">
             <h4
@@ -397,6 +397,8 @@ const loading = ref(false)
 const ifSaved = ref(false)
 const ifError = ref(false)
 const error = ref('')
+
+const app_url = import.meta.env.VITE_APP_URL
 
 const selectedFile = ref(null)
 

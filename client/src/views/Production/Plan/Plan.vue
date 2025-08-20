@@ -1,10 +1,15 @@
 <script setup>
 import AdminLayout from '@/components/layout/AdminLayout.vue';
-import { ref, reactive, onMounted } from "vue"
+import { ref, reactive, onMounted, watch, isRef, isReactive, unref, toRaw } from "vue"
 import Vue3Datatable from "@bhplugin/vue3-datatable"
 import { useProductionStore } from "@/storage/production"
 import '@bhplugin/vue3-datatable/dist/style.css'
 import RefreshIcon from '../../../icons/RefreshIcon.vue';
+import { Badge } from '@/components/ui/badge';
+import { read, writeFileXLSX, } from "xlsx";
+import XLSX from "xlsx"
+import PlanCreate from './PlanCreate.vue';
+import PlusIcon from '@/icons/PlusIcon.vue';
 
 const production = useProductionStore()
 const datatable = ref(null)
@@ -12,7 +17,7 @@ const loading = ref(false)
 
 const cols = ref([
   { field: "id", title: "ID" , hide: true},
-  { field: "user.name", title: "Created by", hide: true },
+  { field: "user.last_name", title: "Created by", hide: true },
   { field: "po_nr", title: "PO Number", hide: false },
   { field: "po_date", title: "PO delivery", hide: false },
   { field: "client.name", title: "Client", hide: false },
@@ -39,12 +44,25 @@ const params = reactive({
 
 const rows = ref([])         
 const total_rows = ref(0)   
-
+const searchInput = ref("")
 const isOpen = ref(false)
+
+const showCreateModal = ref(false)
+
+let timeout = null
 
 onMounted(async () => {
     await fetchData()
 })
+
+watch(searchInput, (newValue) => {
+  clearTimeout(timeout)
+  timeout = setTimeout(() => {
+    params.search = newValue
+  }, 700)
+})
+
+const refreshTimeout = ref(false)
 
 const fetchData = async () => {
   loading.value = true
@@ -62,6 +80,10 @@ const fetchData = async () => {
   } finally {
     loading.value = false
   }
+  refreshTimeout.value = true
+  setTimeout(() => {
+    refreshTimeout.value = false
+  }, 1500)
 }
 
 const changeServer = (data) => {
@@ -71,12 +93,106 @@ const changeServer = (data) => {
   params.sort_direction = data.direction
   fetchData()
 }
+
+const badgeStyle = (label) => {
+  switch(label){
+    case "Pending":
+    case "Waiting Supplier":
+      return 'bg-yellow-500'
+    
+    case "In Production":
+    case "Waiting Supplier":
+      return 'bg-blue-500'
+    case "Completed":
+    case "Delivered":
+      return 'bg-green-500'
+    case "Cancelled":
+    case "Not Outsourced":
+    case "Outsource Cancelled":
+      return 'bg-red-500'
+  }
+}
+
+const exportTable = () => {
+    let records = datatable.value.getSelectedRows()
+    let columns = datatable.value.getColumnFilters()
+    if (!records?.length) {
+        records = production.plans
+    }
+    const filename = 'Plan_' + new Date().toISOString().slice(0, 10) + '_' + new Date().getTime();
+    const coldelimiter = ','
+    const linedelimiter = '\n'
+    let result = cols.value
+        .filter((d) => !d.hide)
+        .map((d) => {
+            return d.title
+        })
+        .join(coldelimiter)
+    result += linedelimiter
+    records.map((item) => {
+        cols.value
+            .filter((d) => !d.hide)
+            .map((d, index) => {
+                if (index > 0) {
+                    result += coldelimiter
+                }
+                const val = d.field.split('.').reduce((acc, part) => acc && acc[part], item)
+                result += val
+            });
+        result += linedelimiter
+    });
+
+    if (result === null) return;
+
+        const plainData = records.map(item => {
+            columns.forEach(colum => {
+                if(colum.hide){
+                    delete item[colum.field]
+                }
+            });
+            if(isRef(item)) {
+                return toRaw(unref(item))
+            }
+            if(isReactive(item)) {
+                return toRaw(item)
+            }
+            return item
+        })
+        let ws = XLSX.utils.json_to_sheet(plainData);
+        let wb = XLSX.utils.book_new() 
+        XLSX.utils.book_append_sheet(wb, ws, 'Plan')
+
+        const COL_WIDTH = 100;
+        let COL_INDEXES = [0,1,2,3,4,5,6,7,8,9, 10, 11, 12,13 ,14,15]
+        if(!ws["!cols"]) ws["!cols"] = []
+
+        COL_INDEXES.forEach(COL_INDEX => {
+            if(!ws["!cols"][COL_INDEX]) ws["!cols"][COL_INDEX] = {wch: 8}
+            ws["!cols"][COL_INDEX].wpx = COL_WIDTH;
+        });
+
+        if(!ws["!rows"]) ws["!rows"] = []
+
+        if(!ws["!rows"][0]) ws["!rows"][0] = {hpx: 30};
+        ws["!rows"][0].hpx = 30;
+
+        ws['!autofilter'] = { ref:"A1:Q1" };
+
+        XLSX.writeFile(wb, filename+'.xlsx', {cellStyles: true})
+};
+
 </script>
 
 <template>
     <AdminLayout>
+        <Modal v-if="showCreateModal">
+          <template #body>
+            <PlanCreate @close="showCreateModal = false"></PlanCreate>
+          </template>
+        </Modal>
 
         <div class="mb-5 relative flex justify-between">
+          <div class="flex items-center gap-5">
             <button type="button" class="dark:bg-dark-900 h-11 w-40 flex rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" @click="isOpen = !isOpen">
                 Column Chooser
                 <svg
@@ -94,13 +210,17 @@ const changeServer = (data) => {
                     <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
             </button>
+            <Button @click="exportTable" class="bg-green-500 hover:bg-green-300">Export to excel</Button>
+          </div>
+
             <div class="flex items-center gap-5">
-              <button @click="fetchData" class="p-2 rounded-md hover:bg-gray-100 transition">
+              <PlusIcon @click="showCreateModal = true" class="text-green-500 cursor-pointer scale-300 rounded-md hover:bg-gray-100 transition"></PlusIcon>
+              <button @click="fetchData" :disabled="refreshTimeout" class="p-2 rounded-md hover:bg-gray-100 transition">
                 <RefreshIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 transition" />
               </button>
               <input
                 type="text"
-                v-model="params.search"
+                v-model="searchInput"
                 placeholder="Global client search"
                 class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
               />
@@ -122,16 +242,23 @@ const changeServer = (data) => {
             :columns="cols"
             :totalRows="total_rows"
             :loading="loading"
-            :pagination="true"
-            :sortable="true"
-            :pageSize="params.pageSize"
+            :pagination="false"
             skin="bh-table-compact"
             :search="params.search"
             :sortColumn="params.sort_column"
             :sortDirection="params.sort_direction"
             :isServerMode="true"
+            :stickyHeader="true"
+            class="table-test"
+            :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer'"
             @change="changeServer"
         >
+            <template #statuss_label="data">
+              <Badge :class="badgeStyle(data.value.statuss_label)">{{data.value.statuss_label}}</Badge>
+            </template>
+            <template #outsource_statuss_label="data">
+              <Badge :class="badgeStyle(data.value.outsource_statuss_label)">{{data.value.outsource_statuss_label}}</Badge>
+            </template>
             <template #created_at="data">
                 <span class="text-gray-500">{{ data.value.created_at ? moment(data.value.created_at).format('YYYY-MM-DD') : 'no data' }}</span>
             </template>
@@ -143,5 +270,8 @@ const changeServer = (data) => {
 </template>
 
 <style>
-
+.table-test .bh-table-responsive{
+    height: auto !important;
+    overflow: none;
+}
 </style>
