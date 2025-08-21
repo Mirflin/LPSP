@@ -17,7 +17,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('process_lists')->insert([
+        DB::table('statusses')->insert([
             ['name' => 'need aproval'],
             ['name' => 'production'],
             ['name' => 'invoice needed'],

@@ -45,4 +45,21 @@ class Product extends Model
     {
         return $this->belongsTo(Client::class);
     }
+
+    public function childrenWithRelations($depth = 1)
+    {
+        if ($depth <= 0) return $this->children();
+
+        return $this->children()
+                    ->with([
+                        'client',
+                        'processes.processList',
+                        'materials',
+                        'files',
+                        'children' => function($q) use ($depth) {
+                            $q->with(['client','processes.processList','materials','files'])
+                            ->with(['children' => fn($q2) => $q2->childrenWithRelations($depth - 1)]);
+                        }
+                    ]);
+    }
 }

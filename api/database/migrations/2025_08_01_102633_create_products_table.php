@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('revision')->nullable();
             $table->string('description')->nullable();
             $table->string('additional_info')->nullable();
+            $table->integer('count')->nullable()->default(1);
             $table->unsignedBigInteger('client_id');
             $table->foreign("client_id")->references("id")->on("clients")->onDelete("cascade");
             $table->float('weight')->nullable();

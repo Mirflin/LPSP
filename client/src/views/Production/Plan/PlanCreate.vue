@@ -1,7 +1,7 @@
 <script setup>
 import { CircleX } from 'lucide-vue-next'
 import Multiselect from 'vue-multiselect'
-import {onMounted, ref} from 'vue'
+import {onMounted, ref, reactive} from 'vue'
 import axios from 'axios'
 import {
   Tabs, TabsContent, TabsList, TabsTrigger
@@ -10,6 +10,10 @@ import { Separator } from '@/components/ui/separator'
 import ProductInfo from '../Products/ProductInfo.vue'
 import {useClientsStore} from '@/storage/clients.js'
 import PlanTemplate from './PlanTemplate.vue'
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
+import moment from 'moment'
+import Checkbox from '@/components/ui/checkbox/Checkbox.vue'
 
 const emit = defineEmits(['close'])
 
@@ -18,25 +22,38 @@ const loading = ref(false)
 const selectedProduct = ref([])
 const products = ref([])
 
+
+const editMode = ref(false)
+
+const generalOptions = ref({
+    po_nr: '',
+    po_date: moment().format('DD.MM.YYYY'),
+    count: '',
+    enableSub: true
+})
+
+const pdf = ref(null)
+
 const displayInfo = ref(false)
 
-const tab = ref("product")
+const tab = ref("general")
+
+const initLoading = ref(false)
 
 onMounted(async() => {
-    loading.value = true
+    initLoading.value = true
     if(clients.clients || clients.clients.length < 1){
         await clients.fetchClients()
     }
     if(products.value || products.value.length < 1){
         await getProduct('')
     }
-    loading.value = false
+    initLoading.value = false
 })
 
 const getProduct = async(query) => {
     loading.value = true
     products.value = (await axios.post('/api/product-by-name', {'drawing_nr': query})).data.data
-    displayInfo.value = true
     loading.value = false
 }
 const clearAll = () => {
@@ -46,37 +63,87 @@ const limitText = (count) => {
     return `and ${count} other countries`
 }
 
-setInterval(() => {
-    console.log(selectedProduct)
-},5000)
+const pdfLoad = ref(false)
 
+const generatePDF = async() => {
+    pdfLoad.value = true
+    const response = await axios.post(`/api/plans/download`, 
+        { plan: selectedProduct.value, settings: generalOptions.value },
+        { responseType: 'blob' }
+    )
+
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
+
+    const iframe = document.getElementById('pdfFrame');
+    iframe.src = url;
+    iframe.onload = () => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    };
+
+    pdfLoad.value = false
+
+    /*
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `plan.pdf`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    */
+}
+console.log(selectedProduct)
 </script>
 
 <template>
+    <iframe id="pdfFrame" style="display: none;"></iframe>
     <div
         class="relative w-full h-full pt-20 overflow-y-auto rounded-3xl bg-white p-2 dark:bg-gray-900"
     >
         <Tabs v-model="tab" class="w-full p-3" v-auto-animate>
             <TabsList class="w-full gap-2 h-10">
+                <TabsTrigger value="general">
+                    General
+                </TabsTrigger>
                 <TabsTrigger value="product">
                     Product
                 </TabsTrigger>
                 <TabsTrigger :disabled="!displayInfo" value="client">
                     Client
                 </TabsTrigger>
-                <TabsTrigger :disabled="!displayInfo" value="preview">
-                    Preview
+                <TabsTrigger :disabled="!displayInfo && !generalOptions.po_date && !generalOptions.po_nr " value="preview">
+                    Pdf
+                </TabsTrigger>
+                <TabsTrigger :disabled="!displayInfo" value="files">
+                    Files
                 </TabsTrigger>
                 <TabsTrigger value="options">
                     Summary
                 </TabsTrigger>
             </TabsList>
-            <div v-if="!loading">
+
+            <div v-if="!initLoading">
+                <TabsContent value="general" class="flex flex-col gap-5">
+                    <div class="flex flex-col gap-2">
+                        <Label>PO number: </Label>
+                        <Input v-model="generalOptions.po_nr" placeholder="12345..."></Input>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <Label>Product count: </Label>
+                        <Input v-model="generalOptions.count" placeholder="10, 20, 30..."></Input>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <Label>PO term: </Label>
+                        <VueDatePicker :hide-navigation="['time']" v-model="generalOptions.po_date" model-type="dd.MM.yyyy" :enable-time="false"></VueDatePicker>
+                    </div>
+                </TabsContent>
+
                 <TabsContent value="product">
                     <multiselect v-model="selectedProduct" id="ajax" label="name" track-by="drawing_nr" placeholder="Type to search"
                         open-direction="bottom" :options="products" :multiple="false" :searchable="true" :loading="loading"
                         :internal-search="false" :clear-on-select="false" :close-on-select="true" :options-limit="10"
-                        :limit="1" :limit-text="limitText" :max-height="600" :show-no-results="false" :hide-selected="true"
+                        :limit="1" :max-height="600" :show-no-results="false" :hide-selected="true"
                         @search-change="getProduct" class="z-[10000] mb-5"
                     >
                         <template #singleLabel="props">
@@ -85,7 +152,9 @@ setInterval(() => {
                             </strong>
                         </template>
                         <template #option="props">
-                            {{ props.option.drawing_nr }}
+                            <p class="w-full h-full" @click="displayInfo = true">
+                                {{ props.option.drawing_nr }}
+                            </p>
                         </template>
                     </multiselect>
                     <Separator></Separator>
@@ -194,8 +263,27 @@ setInterval(() => {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="preview" class="flex justify-center mt-5">
-                    <PlanTemplate :product="selectedProduct"></PlanTemplate>
+                <TabsContent value="preview" class="flex flex-col items-center justify-center mt-5">
+                    <div class="flex justify-start hidden">
+                        <div class="flex gap-5 w-full">
+                            <Label>Enable subproducts?</Label>
+                            <Checkbox v-model="generalOptions.enableSub"></Checkbox>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-5">
+                        <p class="mb-2">#1</p>
+                        <PlanTemplate ref="pdf" :editMode="editMode" :child="false" :settings="generalOptions" :product="selectedProduct"></PlanTemplate>
+                        <div v-if="generalOptions.enableSub" v-for="(child, index) in selectedProduct.children">
+                            <Separator class="mt-5 mb-10"></Separator>
+                            <p class="mb-2"># {{ index+2 }}</p>
+                            <PlanTemplate ref="pdf" :editMode="editMode" :child="true" :settings="generalOptions" :product="child"></PlanTemplate>
+                        </div>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="files" class="flex justify-center mt-5">
+
                 </TabsContent>
             </div>
 
@@ -217,6 +305,14 @@ setInterval(() => {
 
     <div @click="emit('close')" class="fixed right-5 top-5 text-red-500 w-10 h-10 cursor-pointer hover:text-red-400">
         <CircleX size="30"></CircleX>
+    </div>
+
+    <div v-if="tab == 'preview'" class="fixed left-10 bottom-10">
+        <Button @click="editMode = !editMode" :class="editMode ? 'bg-green-500 hover:bg-green-300' : 'bg-red-500 hover:bg-red-300'">Edit mode</Button>
+    </div>
+
+    <div v-if="tab == 'preview'" class="fixed left-40 bottom-9 text-red-500 w-10 h-10 cursor-pointer hover:text-red-400">
+        <Button @click="generatePDF()" class="bg-green-500 hover:bg-green-300">{{ !pdfLoad ? "Print Pdf" : 'Loading...'}}</Button>
     </div>
 </template>
 

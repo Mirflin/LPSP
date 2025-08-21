@@ -107,7 +107,7 @@ class ProductionController extends Controller
                         'children_product_id' => $child['children_product']['id'],
                     ]);
                 } else {
-                    \Log::warning("Child product ID {$child['children_product']['id']} does not exist.");
+                    Log::warning("Child product ID {$child['children_product']['id']} does not exist.");
                 }
             }
         }
@@ -347,7 +347,11 @@ class ProductionController extends Controller
         $query = Product::with([
             'client',                      
             'processes.processList',        
-            'materials',                   
+            'materials',
+            'children.client',
+            'children.processes.processList',
+            'children.materials',
+            'children.files',                    
             'children',                     
             'files',                        
         ]);
@@ -372,7 +376,11 @@ class ProductionController extends Controller
         $query = Product::with([
             'client',                      
             'processes.processList',        
-            'materials',                   
+            'materials',
+            'children.client',
+            'children.processes.processList',
+            'children.materials',
+            'children.files',                   
             'children',                     
             'files',                        
         ]);
@@ -396,6 +404,7 @@ class ProductionController extends Controller
         $sort = $request->input('sort', 'id');
         $direction = $request->input('direction', 'asc');
         $search = $request->input('search', '');
+        $filters = $request->input('filters', []);
 
         $query = Plan::with([
             'client',
@@ -449,6 +458,43 @@ class ProductionController extends Controller
             });
         }
 
+        if($filters){
+            foreach ($filters as $column => $value) {
+                if ($value === null || $value === '') continue;
+
+                switch ($column) {
+                    case 'user.last_name':
+                        $query->whereHas('user', fn($uq) => $uq->where('last_name', 'like', "%{$value}%"));
+                        break;
+
+                    case 'client.name':
+                        $query->whereHas('client', fn($cq) => $cq->where('name', 'like', "%{$value}%"));
+                        break;
+
+                    case 'product.drawing_nr':
+                        $query->whereHas('product', fn($pq) => $pq->where('drawing_nr', 'like', "%{$value}%"));
+                        break;
+
+                    case 'statuss_label':
+                        $val = strtolower($value);
+                        if (isset($reverseStatusMap[$val])) {
+                            $query->where('statuss', $reverseStatusMap[$val]);
+                        }
+                        break;
+
+                    case 'outsource_statuss_label':
+                        $val = strtolower($value);
+                        if (isset($reverseOutsourceMap[$val])) {
+                            $query->where('outsource_statuss', $reverseOutsourceMap[$val]);
+                        }
+                        break;
+
+                    default:
+                        $query->where($column, 'like', "%{$value}%");
+                }
+            }
+        }
+
         $total = $query->count();
 
         $plans = $query->get();
@@ -471,7 +517,10 @@ class ProductionController extends Controller
             'client',                      
             'processes.processList',        
             'materials',                   
-            'children',                     
+            'children.client',
+            'children.processes.processList',
+            'children.materials',
+            'children.files',                   
             'files',                        
         ]);
         

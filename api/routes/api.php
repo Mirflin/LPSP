@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfilesController;
 use App\Http\Controllers\LPSPcreds;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\PlanController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
 
@@ -94,3 +95,5 @@ Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
 
     return response()->download($fullPath);
 })->where('path', '.*');
+
+Route::post('/plans/download', [PlanController::class, 'download']);

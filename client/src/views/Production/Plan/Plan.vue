@@ -34,6 +34,22 @@ const cols = ref([
   { field: "updated_at", title: "Updated at", hide: true },
 ])
 
+const statusOptions = [
+  "Pending",
+  "In Production",
+  "Completed",
+  "Cancelled"
+]
+
+const outsourceStatusOptions = [
+  "Not Outsourced",
+  "Waiting Supplier",
+  "Delivered",
+  "Cancelled"
+]
+
+const filters = ref({})
+
 const params = reactive({
   current_page: 1,
   pagesize: 10,
@@ -48,6 +64,7 @@ const searchInput = ref("")
 const isOpen = ref(false)
 
 const showCreateModal = ref(false)
+
 
 let timeout = null
 
@@ -73,6 +90,7 @@ const fetchData = async () => {
       sort: params.sort_column,
       direction: params.sort_direction,
       search: params.search,
+      filters: filters.value
     })
 
     rows.value = production.plans
@@ -249,16 +267,18 @@ const exportTable = () => {
             :sortDirection="params.sort_direction"
             :isServerMode="true"
             :stickyHeader="true"
-            class="table-test"
+            class="table-test min-h-100"
             :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer'"
             @change="changeServer"
         >
             <template #statuss_label="data">
               <Badge :class="badgeStyle(data.value.statuss_label)">{{data.value.statuss_label}}</Badge>
             </template>
+
             <template #outsource_statuss_label="data">
               <Badge :class="badgeStyle(data.value.outsource_statuss_label)">{{data.value.outsource_statuss_label}}</Badge>
             </template>
+            
             <template #created_at="data">
                 <span class="text-gray-500">{{ data.value.created_at ? moment(data.value.created_at).format('YYYY-MM-DD') : 'no data' }}</span>
             </template>
@@ -273,5 +293,8 @@ const exportTable = () => {
 .table-test .bh-table-responsive{
     height: auto !important;
     overflow: none;
+}
+.table-test .bh-table-responsive .bh-table-compact{
+  height: auto;
 }
 </style>
