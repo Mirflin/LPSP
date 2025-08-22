@@ -184,7 +184,7 @@ class ProductionController extends Controller
                 ]);
 
             }
-            GoogleDrive::dispatch($validated['files'], ($validated['client']['name'].'/'.$validated['drawing_nr'].'/'));
+            GoogleDrive::dispatch($validated['files'], ('orders/'.$validated['client']['name'].'/'.$validated['drawing_nr'].'/'));
         }
 
         $newProd = $this->getProductById($product->id);

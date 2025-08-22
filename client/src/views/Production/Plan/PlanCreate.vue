@@ -82,6 +82,7 @@ const generatePDF = async() => {
       iframe.contentWindow.print();
     };
 
+    
     pdfLoad.value = false
 
     /*
@@ -112,29 +113,26 @@ console.log(selectedProduct)
                 <TabsTrigger :disabled="!displayInfo" value="client">
                     Client
                 </TabsTrigger>
-                <TabsTrigger :disabled="!displayInfo && !generalOptions.po_date && !generalOptions.po_nr " value="preview">
+                <TabsTrigger :disabled="!displayInfo || !generalOptions.po_date || !generalOptions.po_nr || !generalOptions.count " value="preview">
                     Pdf
                 </TabsTrigger>
-                <TabsTrigger :disabled="!displayInfo" value="files">
+                <TabsTrigger :disabled="!displayInfo || !generalOptions.po_date || !generalOptions.po_nr || !generalOptions.count " value="files">
                     Files
-                </TabsTrigger>
-                <TabsTrigger value="options">
-                    Summary
                 </TabsTrigger>
             </TabsList>
 
             <div v-if="!initLoading">
                 <TabsContent value="general" class="flex flex-col gap-5">
                     <div class="flex flex-col gap-2">
-                        <Label>PO number: </Label>
+                        <Label>PO number: <span class="text-error-500">*</span></Label>
                         <Input v-model="generalOptions.po_nr" placeholder="12345..."></Input>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <Label>Product count: </Label>
+                        <Label>Product count: <span class="text-error-500">*</span></Label>
                         <Input v-model="generalOptions.count" placeholder="10, 20, 30..."></Input>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <Label>PO term: </Label>
+                        <Label>PO term: <span class="text-error-500">*</span></Label>
                         <VueDatePicker :hide-navigation="['time']" v-model="generalOptions.po_date" model-type="dd.MM.yyyy" :enable-time="false"></VueDatePicker>
                     </div>
                 </TabsContent>
@@ -309,6 +307,10 @@ console.log(selectedProduct)
 
     <div v-if="tab == 'preview'" class="fixed left-10 bottom-10">
         <Button @click="editMode = !editMode" :class="editMode ? 'bg-green-500 hover:bg-green-300' : 'bg-red-500 hover:bg-red-300'">Edit mode</Button>
+    </div>
+
+    <div :disabled="!displayInfo || !generalOptions.po_date || !generalOptions.po_nr || !generalOptions.count" class="fixed right-10 bottom-10">
+        <Button @click="" class="bg-blue-500 hover:bg-blue-300">Finish</Button>
     </div>
 
     <div v-if="tab == 'preview'" class="fixed left-40 bottom-9 text-red-500 w-10 h-10 cursor-pointer hover:text-red-400">

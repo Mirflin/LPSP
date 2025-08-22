@@ -232,7 +232,7 @@ const exportTable = () => {
           </div>
 
             <div class="flex items-center gap-5">
-              <PlusIcon @click="showCreateModal = true" class="text-green-500 cursor-pointer scale-300 rounded-md hover:bg-gray-100 transition"></PlusIcon>
+              <PlusIcon @click="showCreateModal = true" class="text-green-500 w-5 cursor-pointer scale-300 rounded-md hover:bg-gray-100 transition"></PlusIcon>
               <button @click="fetchData" :disabled="refreshTimeout" class="p-2 rounded-md hover:bg-gray-100 transition">
                 <RefreshIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 transition" />
               </button>

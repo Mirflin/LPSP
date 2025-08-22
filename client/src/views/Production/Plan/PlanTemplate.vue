@@ -42,8 +42,6 @@ const hightlight = (process_name) => {
     return 'bg-yellow-300';
   case "Surface treatment":
     return 'bg-green-300';
-  case "Outsourcing":
-    return 'bg-green-300';
   case "Welding":
     return 'bg-purple-300';
   default:
@@ -124,7 +122,7 @@ defineExpose({ pdf })
       <table class="w-full border-collapse">
         <thead>
           <tr>
-            <th class="border border-black px-2 py-1 text-left"></th>
+            <th class="border border-black px-2 py-1 text-left">Līdz</th>
             <th class="border border-black px-2 py-1 text-left">Process</th>
             <th class="border border-black px-2 py-1 text-left">Subprocess</th>
             <th class="border border-black px-2 py-1 text-left">Kvalitāti pārbaudija / skaitīja</th>

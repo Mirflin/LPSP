@@ -4,7 +4,6 @@
             'Sheet Laser'        => '#c1dcfaff', // light blue
             'Tube Laser'       => '#f9ecb9ff', // yellow
             'Surface treatment' => '#acedc4ff', // green
-            'Outsourcing' => '#acedc4ff', // green
             'Welding'           => '#d7c9ffff', // purple
             default             => '#FFFFFF', // fallback white
         };
