@@ -14,6 +14,7 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
 import Checkbox from '@/components/ui/checkbox/Checkbox.vue'
+import PlanFiles from './PlanFiles.vue'
 
 const emit = defineEmits(['close'])
 
@@ -82,7 +83,7 @@ const generatePDF = async() => {
       iframe.contentWindow.print();
     };
 
-    
+
     pdfLoad.value = false
 
     /*
@@ -281,7 +282,7 @@ console.log(selectedProduct)
                 </TabsContent>
 
                 <TabsContent value="files" class="flex justify-center mt-5">
-
+                    <PlanFiles :selectedProduct="selectedProduct"></PlanFiles>
                 </TabsContent>
             </div>
 

@@ -13,6 +13,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "pusher/pusher-php-server": "^7.2",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.6",
         "spatie/laravel-google-cloud-storage": "^2.3",
         "tes/laravel-google-drive-storage": "^1.0",
         "yaza/laravel-google-drive-storage": "^4.1"

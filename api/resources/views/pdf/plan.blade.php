@@ -57,7 +57,7 @@
             text-align: center;
             min-width: 50mm;
             width: 200px;
-            margin-bottom: 10px;
+            margin-bottom: 1px;
         }
         .logo {
             position: absolute;
@@ -120,7 +120,6 @@
         }
         .processes p {
             font-weight: bold;
-            margin-bottom: 4px;
         }
         table {
             width: 100%;
@@ -128,17 +127,32 @@
         }
         th, td {
             border: 1px solid black;
-            padding: 2mm;
+            padding-left: 2mm;
+            padding-right: 2mm;
             text-align: left;
         }
         th {
             text-align: center;
+        }
+        td p{
+            padding: 0;
+        }
+        td{
+            height: 8mm !important;
+            overflow: hidden;
+            white-space: nowrap;
+            word-wrap: break-word;
+            box-sizing: border-box;
+            
         }
         td.center {
             text-align: center;
         }
         td.min-height {
             height: 3mm;
+        }
+        td.date_width{
+            width: 15mm;
         }
 
         /* Materials */
@@ -156,7 +170,7 @@
             word-wrap: break-word;
         }
         .material-note {
-            min-height: 30mm;
+            height: 30mm;
         }
         .page_break { page-break-before: always; }
         .auto{
@@ -239,11 +253,11 @@
                 <tbody>
                     @foreach($plan['processes'] as $process)
                         <tr>
-                            <td class="auto">{{ $process['date_completion'] }}</td>
-                            <td class="min-height" style="background-color: {{ highlightColor($process['process_list']['name']) }}">{{ $process['process_list']['name'] }}</td>
-                            <td class="center">{{ $process['sub_process'] ?? '-' }}</td>
-                            <td></td>
-                            <td></td>
+                            <td class="date_width" style="width: 15%">{{ $process['date_completion'] }}</td>
+                            <td class="min-height" style="width: 30%; background-color: {{ highlightColor($process['process_list']['name']) }}">{{ $process['process_list']['name'] }}</td>
+                            <td class="center" style="width: 30%">{{ $process['sub_process'] ?? '-' }}</td>
+                            <td style="width: 25%"></td>
+                            <td style="width: 10%"></td>
                         </tr>
                     @endforeach
                     @for($i = 0; $i < 10 - count($plan['processes']); $i++)
@@ -341,10 +355,10 @@
                     <tbody>
                         @foreach($plan['processes'] as $process)
                             <tr class="processes">
-                                <td>{{ $process['date_completion'] }}</td>
+                                <td class="date_width" style="width: 15%">{{ $process['date_completion'] }}</td>
                                 <td class="min-height" style="background-color: {{ highlightColor($process['process_list']['name']) }}; width: 30%">{{ $process['process_list']['name'] }}</td>
                                 <td class="center" style="width: 30%">{{ $process['sub_process'] ?? '-' }}</td>
-                                <td style="width: 30%"></td>
+                                <td style="width: 25%"></td>
                                 <td style="width: 10%"></td>
                             </tr>
                         @endforeach

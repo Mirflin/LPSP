@@ -97,3 +97,4 @@ Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
 })->where('path', '.*');
 
 Route::post('/plans/download', [PlanController::class, 'download']);
+Route::post('/download/files', [PlanController::class, 'downloadFiles']);
