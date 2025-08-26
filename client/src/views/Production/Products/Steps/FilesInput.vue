@@ -18,6 +18,12 @@ const deleteFile = () => {
     }
 }
 
+watch(() => props.file_obj.type, (newType) => {
+    if(!props.file_obj.bom && !props.file_obj.drawing){
+        props.file_obj.type = 1
+    }
+})
+
 console.log(props.file_obj)
 </script>
 
@@ -33,11 +39,11 @@ console.log(props.file_obj)
         </div>
         <div class="flex gap-5">
             <div>
-                <Checkbox v-model="props.file_obj.drawing" @click="props.file_obj.bom = false"></Checkbox>
+                <Checkbox v-model="props.file_obj.drawing" @click="props.file_obj.bom = false; props.file_obj.type = 2"></Checkbox>
                 <label class="ml-2">Drawing?</label>
             </div>
             <div>
-                <Checkbox v-model="props.file_obj.bom" @click="props.file_obj.drawing = false"></Checkbox>
+                <Checkbox v-model="props.file_obj.bom" @click="props.file_obj.drawing = false; props.file_obj.type = 3"></Checkbox>
                 <label class="ml-2">BOM?</label>
             </div>
             <DeleteIcon @click="deleteFile" class="cursor-pointer mr-1"></DeleteIcon>

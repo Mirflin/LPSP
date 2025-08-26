@@ -10,10 +10,14 @@ import { read, writeFileXLSX, } from "xlsx";
 import XLSX from "xlsx"
 import PlanCreate from './PlanCreate.vue';
 import PlusIcon from '@/icons/PlusIcon.vue';
+import moment from 'moment'
+import PlanSheet from './PlanSheet.vue';
 
 const production = useProductionStore()
 const datatable = ref(null)
 const loading = ref(false)
+
+const sheetOpen = ref(false)
 
 const cols = ref([
   { field: "id", title: "ID" , hide: true},
@@ -24,7 +28,7 @@ const cols = ref([
   { field: "product.drawing_nr", title: "Product", hide: false },
   { field: "produced", title: "Produced", hide: true },
   { field: "sended", title: "Sended", hide: true },
-  { field: "Price", title: "Price", hide: true },
+  { field: "price", title: "Price", hide: true },
   { field: "total", title: "Total", hide: false },
   { field: "invoice", title: "Invoice", hide: false },
   { field: "extra_process", title: "Extra process", hide: true },
@@ -34,19 +38,6 @@ const cols = ref([
   { field: "updated_at", title: "Updated at", hide: true },
 ])
 
-const statusOptions = [
-  "Pending",
-  "In Production",
-  "Completed",
-  "Cancelled"
-]
-
-const outsourceStatusOptions = [
-  "Not Outsourced",
-  "Waiting Supplier",
-  "Delivered",
-  "Cancelled"
-]
 
 const filters = ref({})
 
@@ -65,7 +56,6 @@ const isOpen = ref(false)
 
 const showCreateModal = ref(false)
 
-
 let timeout = null
 
 onMounted(async () => {
@@ -80,6 +70,8 @@ watch(searchInput, (newValue) => {
 })
 
 const refreshTimeout = ref(false)
+
+const sheetRow = ref(null)
 
 const fetchData = async () => {
   loading.value = true
@@ -117,7 +109,6 @@ const badgeStyle = (label) => {
     case "Pending":
     case "Waiting Supplier":
       return 'bg-yellow-500'
-    
     case "In Production":
     case "Waiting Supplier":
       return 'bg-blue-500'
@@ -161,43 +152,47 @@ const exportTable = () => {
     });
 
     if (result === null) return;
-
-        const plainData = records.map(item => {
-            columns.forEach(colum => {
-                if(colum.hide){
-                    delete item[colum.field]
-                }
-            });
-            if(isRef(item)) {
-                return toRaw(unref(item))
+    const plainData = records.map(item => {
+        columns.forEach(colum => {
+            if(colum.hide){
+                delete item[colum.field]
             }
-            if(isReactive(item)) {
-                return toRaw(item)
-            }
-            return item
-        })
-        let ws = XLSX.utils.json_to_sheet(plainData);
-        let wb = XLSX.utils.book_new() 
-        XLSX.utils.book_append_sheet(wb, ws, 'Plan')
-
-        const COL_WIDTH = 100;
-        let COL_INDEXES = [0,1,2,3,4,5,6,7,8,9, 10, 11, 12,13 ,14,15]
-        if(!ws["!cols"]) ws["!cols"] = []
-
-        COL_INDEXES.forEach(COL_INDEX => {
-            if(!ws["!cols"][COL_INDEX]) ws["!cols"][COL_INDEX] = {wch: 8}
-            ws["!cols"][COL_INDEX].wpx = COL_WIDTH;
         });
+        if(isRef(item)) {
+            return toRaw(unref(item))
+        }
+        if(isReactive(item)) {
+            return toRaw(item)
+        }
+        return item
+    })
+    let ws = XLSX.utils.json_to_sheet(plainData);
+    let wb = XLSX.utils.book_new() 
+    XLSX.utils.book_append_sheet(wb, ws, 'Plan')
 
-        if(!ws["!rows"]) ws["!rows"] = []
+    const COL_WIDTH = 100;
+    let COL_INDEXES = [0,1,2,3,4,5,6,7,8,9, 10, 11, 12,13 ,14,15]
+    if(!ws["!cols"]) ws["!cols"] = []
 
-        if(!ws["!rows"][0]) ws["!rows"][0] = {hpx: 30};
-        ws["!rows"][0].hpx = 30;
+    COL_INDEXES.forEach(COL_INDEX => {
+        if(!ws["!cols"][COL_INDEX]) ws["!cols"][COL_INDEX] = {wch: 8}
+        ws["!cols"][COL_INDEX].wpx = COL_WIDTH;
+    });
 
-        ws['!autofilter'] = { ref:"A1:Q1" };
+    if(!ws["!rows"]) ws["!rows"] = []
 
-        XLSX.writeFile(wb, filename+'.xlsx', {cellStyles: true})
+    if(!ws["!rows"][0]) ws["!rows"][0] = {hpx: 30};
+    ws["!rows"][0].hpx = 30;
+
+    ws['!autofilter'] = { ref:"A1:Q1" };
+
+    XLSX.writeFile(wb, filename+'.xlsx', {cellStyles: true})
 };
+
+const setRow = (data) => {
+  sheetRow.value = data
+  sheetOpen.value = true
+}
 
 </script>
 
@@ -239,7 +234,7 @@ const exportTable = () => {
               <input
                 type="text"
                 v-model="searchInput"
-                placeholder="Global client search"
+                placeholder="Global search"
                 class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
               />
             </div>
@@ -270,7 +265,17 @@ const exportTable = () => {
             class="table-test min-h-100"
             :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer'"
             @change="changeServer"
+            @rowClick="setRow"
         >
+
+            <template #price="data">
+              <span>{{ data.value.price }} €</span>
+            </template>
+
+            <template #total="data">
+              <span>{{ data.value.total }} €</span>
+            </template>
+
             <template #statuss_label="data">
               <Badge :class="badgeStyle(data.value.statuss_label)">{{data.value.statuss_label}}</Badge>
             </template>
@@ -286,6 +291,17 @@ const exportTable = () => {
                 <span class="text-gray-500">{{ data.value.updated_at ? moment(data.value.created_at).format('YYYY-MM-DD') : 'no data' }}</span>
             </template>
         </vue3-datatable>
+
+        <Sheet v-model:open="sheetOpen">
+            <SheetContent>
+                <SheetHeader class="mt-25">
+                    <SheetTitle>Editing {{ sheetRow }}</SheetTitle>
+                    <SheetDescription>
+                    </SheetDescription>
+                </SheetHeader>
+            </SheetContent>
+        </Sheet>
+
     </AdminLayout>
 </template>
 

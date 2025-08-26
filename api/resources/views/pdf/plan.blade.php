@@ -193,7 +193,7 @@
                 </div>
             </div>
             <div>
-                <img src="{{ public_path('storage/images/main-logo.jpg') }}" alt="Logo" class="logo">
+                <img src="{{ public_path('images/main-logo.jpg') }}" alt="Logo" class="logo">
             </div>
         </div>
 
@@ -295,7 +295,7 @@
                     </div>
                 </div>
                 <div>
-                    <img src="{{ public_path('storage/images/main-logo.jpg') }}" alt="Logo" class="logo">
+                    <img src="{{ public_path('images/main-logo.jpg') }}" alt="Logo" class="logo">
                 </div>
             </div>
 

@@ -107,6 +107,16 @@ export const useProductionStore = defineStore('production', () => {
         }
     }
 
+    const createPlan = async(row) => {
+        try{
+            await axios.post('/api/plan-create', row)
+            return null
+        } catch(error) {
+            console.log(error)
+            return error
+        }
+    }
+
     return{
         products,
         total_products,
@@ -124,6 +134,7 @@ export const useProductionStore = defineStore('production', () => {
         getProductById,
         fetchProducts,
         updateRow,
+        createPlan
     }
 }, {
     persist: true

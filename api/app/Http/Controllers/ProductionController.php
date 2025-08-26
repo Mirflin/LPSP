@@ -84,6 +84,7 @@ class ProductionController extends Controller
             'files' => 'nullable|array',
             'materials' => 'required|array',
             'childs' => 'nullable',
+            'count' => 'numeric',
             'processes' => 'required|array',
             'weight' => 'nullable|numeric'
         ]);
@@ -95,6 +96,7 @@ class ProductionController extends Controller
             'description' => $validated['description'] ?? null,
             'additional_info' => $validated['additional_info'] ?? null,
             'client_id' => $validated['client']['id'] ?? null,
+            'count' => $validated['count'] ?? 1,
             'weight' => $validated['weight'] ?? null
         ]);
 

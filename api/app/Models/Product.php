@@ -13,7 +13,8 @@ class Product extends Model
         'description',
         'additional_info',
         'client_id',
-        'weight'
+        'weight',
+        'count'
     ];
 
     public function processes()

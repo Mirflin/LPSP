@@ -92,14 +92,16 @@ const printFiles = async() => {
                 </div>
             </div>
 
-            <div v-for="file in props.selectedProduct.children.files" class="mt-3 mb-3">
-                <div class="flex gap-5 items-center cursor-pointer" @click="downloadFile" v-if="file.type == 3 && options.bom">
-                    <FileIcons 
-                        :name="file.name" :width="50" :height="50" 
-                        :isFolder="false" :isMulti="false" :isLink="false" 
-                        :itemStyle="{display: 'flex', alignItems: 'center'}"  
-                    />
-                    <p>{{ file.name.length > 40 ? file.name.slice(0,40)+'...' : file.name}}</p>
+            <div v-for="children in props.selectedProduct.children" class="mt-3 mb-3">
+                <div v-for="file in children.files">
+                    <div class="flex gap-5 items-center cursor-pointer" @click="downloadFile" v-if="file.type == 3 && options.bom">
+                        <FileIcons 
+                            :name="file.name" :width="50" :height="50" 
+                            :isFolder="false" :isMulti="false" :isLink="false" 
+                            :itemStyle="{display: 'flex', alignItems: 'center'}"  
+                        />
+                        <p>{{ file.name.length > 40 ? file.name.slice(0,40)+'...' : file.name}}</p>
+                    </div>
                 </div>
             </div>
 
@@ -116,14 +118,16 @@ const printFiles = async() => {
                 </div>
             </div>
 
-            <div v-for="file in props.selectedProduct.children.files" class="mt-3 mb-3">
-                <div class="flex gap-5 items-center cursor-pointer" @click="downloadFile" v-if="file.type == 2 && options.drawing">
-                    <FileIcons 
-                        :name="file.name" :width="50" :height="50" 
-                        :isFolder="false" :isMulti="false" :isLink="false" 
-                        :itemStyle="{display: 'flex', alignItems: 'center'}"  
-                    />
-                    <p>{{ file.name.length > 40 ? file.name.slice(0,40)+'...' : file.name}}</p>
+            <div v-for="children in props.selectedProduct.children" class="mt-3 mb-3">
+                <div v-for="file in children.files">
+                    <div class="flex gap-5 items-center cursor-pointer" @click="downloadFile" v-if="file.type == 2 && options.drawing">
+                        <FileIcons 
+                            :name="file.name" :width="50" :height="50" 
+                            :isFolder="false" :isMulti="false" :isLink="false" 
+                            :itemStyle="{display: 'flex', alignItems: 'center'}"  
+                        />
+                        <p>{{ file.name.length > 40 ? file.name.slice(0,40)+'...' : file.name}}</p>
+                    </div>
                 </div>
             </div>
 
@@ -140,14 +144,16 @@ const printFiles = async() => {
                 </div>
             </div>
 
-            <div v-for="file in props.selectedProduct.children.files" class="mt-3 mb-3">
-                <div class="flex gap-5 items-center cursor-pointer" @click="downloadFile" v-if="file.type == 1 && options.others">
-                    <FileIcons 
-                        :name="file.name" :width="50" :height="50" 
-                        :isFolder="false" :isMulti="false" :isLink="false" 
-                        :itemStyle="{display: 'flex', alignItems: 'center'}"  
-                    />
-                    <p>{{ file.name.length > 40 ? file.name.slice(0,40)+'...' : file.name}}</p>
+            <div v-for="children in props.selectedProduct.children" class="mt-3 mb-3">
+                <div v-for="file in children.files">
+                    <div class="flex gap-5 items-center cursor-pointer" @click="downloadFile" v-if="file.type == 1 && options.others">
+                        <FileIcons 
+                            :name="file.name" :width="50" :height="50" 
+                            :isFolder="false" :isMulti="false" :isLink="false" 
+                            :itemStyle="{display: 'flex', alignItems: 'center'}"  
+                        />
+                        <p>{{ file.name.length > 40 ? file.name.slice(0,40)+'...' : file.name}}</p>
+                    </div>
                 </div>
             </div>
         </div>

@@ -8,8 +8,6 @@ const props = defineProps(['product', 'settings', 'child', 'editMode'])
 console.log(props.settings)
 const proc_ref = ref([])
 
-props.product.count = 1
-
 const materials = computed(() => {
     let string = ""
     props.product.materials.forEach(material => {

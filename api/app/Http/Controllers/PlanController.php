@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Log;
 use App\Jobs\GoogleDriveRaw;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
-
+use App\Models\Plan;
+use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 
 class PlanController extends Controller
 {
@@ -42,15 +44,52 @@ class PlanController extends Controller
         return Storage::disk('public')->get($path);
     }
 
+    public function create(Request $request) {
+        Log::info($request);
+        $validated = $request->validate([
+            'po_date' => 'required|string',
+            'po_nr' => 'required|string',
+            'client_id' => 'required|numeric',
+            'product_id' => 'required|numeric',
+            'price' => 'numeric',
+            'total' => 'numeric',
+        ]);
+        
+        $extra_process = $request->input('extra_process', '');
+
+        $isOutsourced = false;
+        $product = Product::with([            
+            'processes.processList',                
+        ])->find($validated['product_id']);
+        
+        foreach($product['processes'] as $process){
+            if($process['processList']['name'] == 'Outsourcing'){
+                $isOutsourced = true;
+            }
+        }
+
+        Plan::create([
+            'po_date' => $validated['po_date'],
+            'po_nr' => $validated['po_nr'],
+            'client_id' => $validated['client_id'],
+            'product_id' => $validated['product_id'],
+            'price' => $validated['price'],
+            'total' => $validated['total'],
+            'extra_process' => $validated['extra_process'] ?? '',
+            'user_id' => Auth::user()->id,
+            'outsource_statuss' => $isOutsourced ? 1 : 0
+        ]);
+
+        return response()->json(['message' => 'Plan created successfully!']);
+    }
+
     public function downloadFiles(Request $request)
     {
         $product = $request->input('product');
         $pdf = new Fpdi();
 
-        // Merge main product PDFs
         $this->mergePdfs($pdf, $product['files'] ?? []);
 
-        // Merge children PDFs (one level)
         if (!empty($product['children'])) {
             foreach ($product['children'] as $child) {
                 $this->mergePdfs($pdf, $child['files'] ?? []);
@@ -80,6 +119,6 @@ class PlanController extends Controller
                 $pdf->useTemplate($tplIdx);
             }
         }
-    } 
+    }
 
 }

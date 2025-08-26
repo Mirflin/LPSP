@@ -15,14 +15,14 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
 import Checkbox from '@/components/ui/checkbox/Checkbox.vue'
 import PlanFiles from './PlanFiles.vue'
+import {useProductionStore} from '@/storage/production.js'
 
 const emit = defineEmits(['close'])
-
+const production = useProductionStore()
 const clients = useClientsStore()
 const loading = ref(false)
 const selectedProduct = ref([])
 const products = ref([])
-
 
 const editMode = ref(false)
 
@@ -30,7 +30,10 @@ const generalOptions = ref({
     po_nr: '',
     po_date: moment().format('DD.MM.YYYY'),
     count: '',
-    enableSub: true
+    enableSub: true,
+    price_for_one: 0,
+    total: 0,
+    extra_process: '',
 })
 
 const pdf = ref(null)
@@ -55,6 +58,7 @@ onMounted(async() => {
 const getProduct = async(query) => {
     loading.value = true
     products.value = (await axios.post('/api/product-by-name', {'drawing_nr': query})).data.data
+    console.log(products.value)
     loading.value = false
 }
 const clearAll = () => {
@@ -85,17 +89,27 @@ const generatePDF = async() => {
 
 
     pdfLoad.value = false
-
-    /*
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `plan.pdf`)
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    */
 }
-console.log(selectedProduct)
+
+const save = async() => {
+    const data = {
+        'po_date': generalOptions.value.po_date,
+        'po_nr': generalOptions.value.po_nr,
+        'client_id': selectedProduct.value.client.id,
+        'product_id': selectedProduct.value.id,
+        'price': generalOptions.value.price_for_one,
+        'total': generalOptions.value.total,
+        'extra_process': generalOptions.value.extra_process
+    }
+
+    console.log(data)
+    const response = await production.createPlan(data)
+    if(response){
+        console.log(response)
+    }
+}
+
+console.log(selectedProduct.value)
 </script>
 
 <template>
@@ -120,6 +134,9 @@ console.log(selectedProduct)
                 <TabsTrigger :disabled="!displayInfo || !generalOptions.po_date || !generalOptions.po_nr || !generalOptions.count " value="files">
                     Files
                 </TabsTrigger>
+                <TabsTrigger :disabled="!displayInfo || !generalOptions.po_date || !generalOptions.po_nr || (!generalOptions.count && !generalOptions.count < 1)" value="summary">
+                    Summary
+                </TabsTrigger>
             </TabsList>
 
             <div v-if="!initLoading">
@@ -135,6 +152,10 @@ console.log(selectedProduct)
                     <div class="flex flex-col gap-2">
                         <Label>PO term: <span class="text-error-500">*</span></Label>
                         <VueDatePicker :hide-navigation="['time']" v-model="generalOptions.po_date" model-type="dd.MM.yyyy" :enable-time="false"></VueDatePicker>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <Label>Extra process: </Label>
+                        <Input v-model="generalOptions.extra_process"></Input>
                     </div>
                 </TabsContent>
 
@@ -284,6 +305,21 @@ console.log(selectedProduct)
                 <TabsContent value="files" class="flex justify-center mt-5">
                     <PlanFiles :selectedProduct="selectedProduct"></PlanFiles>
                 </TabsContent>
+
+                <TabsContent value="summary" class="flex flex-row flex-wrap gap-5 justify-center mt-5">
+                    <div class="w-1/2">
+                        <Label class="mb-3">Price for one</Label>
+                        <Input type="number" v-model="generalOptions.price_for_one" @input="generalOptions.total = generalOptions.price_for_one * generalOptions.count" min="0"></Input>
+                    </div>
+                    <Separator></Separator>
+                    <div class="w-1/2">
+                        {{ generalOptions.price_for_one ? generalOptions.price_for_one : 0 }} * {{ generalOptions.count }} (product count)
+                        <p class="mb-2"></p>
+                        <Separator></Separator>
+                        <Label class="mb-3 mt-3">Total</Label>
+                        <p>{{ generalOptions.total }} €</p>
+                    </div>
+                </TabsContent>
             </div>
 
             <div
@@ -310,8 +346,8 @@ console.log(selectedProduct)
         <Button @click="editMode = !editMode" :class="editMode ? 'bg-green-500 hover:bg-green-300' : 'bg-red-500 hover:bg-red-300'">Edit mode</Button>
     </div>
 
-    <div :disabled="!displayInfo || !generalOptions.po_date || !generalOptions.po_nr || !generalOptions.count" class="fixed right-10 bottom-10">
-        <Button @click="" class="bg-blue-500 hover:bg-blue-300">Finish</Button>
+    <div class="fixed right-10 bottom-10">
+        <Button :disabled="!displayInfo || !generalOptions.po_date || !generalOptions.price_for_one || !generalOptions.po_nr || (!generalOptions.count && !generalOptions.count < 1)" @click="save" class="bg-blue-500 hover:bg-blue-300">Finish</Button>
     </div>
 
     <div v-if="tab == 'preview'" class="fixed left-40 bottom-9 text-red-500 w-10 h-10 cursor-pointer hover:text-red-400">

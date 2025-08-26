@@ -15,6 +15,7 @@ export const useProductCreate = defineStore('product_create', () => {
         "client": '',
         "files": [],
         "childs": [],
+        "count": 1,
         "processes": [{'id': 1, 'process': '', 'subprocess': ''}],
     })
 
@@ -27,6 +28,7 @@ export const useProductCreate = defineStore('product_create', () => {
         product.value.weight = ''
         product.value.materials = []
         product.value.client = ''
+        product.value.count = 1
         product.value.files = []
         product.value.childs = []
         product.value.processes = [{'id': 1, 'process': '', 'subprocess': ''}]
