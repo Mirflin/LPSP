@@ -18,13 +18,10 @@ export const useProductionStore = defineStore('production', () => {
     if(!subscribed){
         let channel = echo.private('plan');
         channel.listen('.plan_update', (data) => {
-            const plan = plans.value.find(pl => pl.id == data.plan.id)
-
-            plan.statuss = data.plan.statuss
-            plan.statuss_label = data.plan.statuss_label
-
-            plan.outsource_statuss = data.plan.outsource_statuss
-            plan.outsource_statuss_label = data.plan.outsource_statuss_label
+            const index = plans.value.findIndex(pl => pl.id === data.plan.id)
+            if (index !== -1) {
+                plans.value[index] = data.plan
+            }
         })
 
         channel.listen('.plan_new', (data) => {

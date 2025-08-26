@@ -47,6 +47,11 @@ class Product extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function plan()
+    {
+        return $this->hasMany(SubPlan::class, 'product_id');
+    }
+
     public function childrenWithRelations($depth = 1)
     {
         if ($depth <= 0) return $this->children();

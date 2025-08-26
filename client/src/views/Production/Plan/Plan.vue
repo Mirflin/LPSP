@@ -22,6 +22,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import axios from 'axios';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
 
 const production = useProductionStore()
 const datatable = ref(null)
@@ -120,7 +130,6 @@ const changeServer = (data) => {
 const badgeStyle = (label) => {
   switch(label){
     case "Pending":
-    case "Waiting Supplier":
       return 'bg-yellow-500'
     case "In Production":
     case "Waiting Supplier":
@@ -129,9 +138,10 @@ const badgeStyle = (label) => {
     case "Delivered":
       return 'bg-green-500'
     case "Cancelled":
-    case "Not Outsourced":
     case "Outsource Cancelled":
       return 'bg-red-500'
+    case "Not Outsourced":
+      return 'bg-gray-500'
   }
 }
 
@@ -211,12 +221,24 @@ const updateStatus = async(data) => {
   const response = await axios.post('/api/plan-status', {id: data.value.id, status: data.value.statuss_label, outstatus: data.value.outsource_statuss_label})
   alert_message.value = response.data.message
   alert_type.value = 'success'
-  
+
   setTimeout(() => {
     alert_message.value = null
     alert_type.value = null
-  }, 3000)
+  }, 2000)
 }
+
+const updateSubStatus = async(data) => {
+  const response = await axios.post('/api/subplan-status', {id: data.plan_id, subId: data.id, status: data.statuss_label, outsource_status: data.outsource_statuss_label, produced: data.produced})
+  
+  alert_message.value = response.data.message
+  alert_type.value = 'success'
+  setTimeout(() => {
+    alert_message.value = null
+    alert_type.value = null
+  }, 2000)
+}
+
 </script>
 
 <template>
@@ -366,15 +388,91 @@ const updateStatus = async(data) => {
             </template>
         </vue3-datatable>
 
-        <Sheet v-model:open="sheetOpen">
-            <SheetContent>
-                <SheetHeader class="mt-25">
-                    <SheetTitle>Editing {{ sheetRow.po_nr }}</SheetTitle>
-                    <SheetDescription>
-                    </SheetDescription>
-                </SheetHeader>
-            </SheetContent>
-        </Sheet>
+        <Drawer v-model:open="sheetOpen">
+          <DrawerContent class="h-200">
+            <DrawerHeader class="hidden">
+              <DrawerTitle>Are you absolutely sure?</DrawerTitle>
+              <DrawerDescription>This action cannot be undone.</DrawerDescription>
+            </DrawerHeader>
+            
+            <div class="p-4">
+              <h1 class="text-xl mb-5">Plan nr. {{ sheetRow.po_nr }}</h1>
+              <div class="flex justify-between">
+                <div class="flex gap-5">
+                  <Button class="bg-green-500 hover:bg-green-400">Print plan</Button>
+                  <Button class="bg-blue-500 hover:bg-blue-400">Download plan</Button>
+                </div>
+                <Button class="bg-red-500 hover:bg-red-400">Delete</Button>
+              </div>
+              <h1 class="mt-5">Subproduction</h1>
+              <div class="border-1 h-85 rounded-md p-5 overflow-auto mt-1" v-auto-animate>
+                <div v-for="sub in sheetRow.subplan" class="w-full border-1 h-15 rounded-md flex p-2 justify-between items-center hover:bg-gray-100">
+                  {{ sub.product.drawing_nr }}
+                  <Label>Produced: </Label>
+                  <Input @change="updateSubStatus(sub)" class="w-20" v-model="sub.produced"></Input>
+                  <Label>Status: </Label>
+                  <Select v-model="sub.statuss_label" @update:model-value="updateSubStatus(sub)">
+                    <SelectTrigger>
+                      <Badge class="w-20" :class="badgeStyle(sub.statuss_label)">
+                        <SelectValue></SelectValue>
+                      </Badge>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Status</SelectLabel>
+                          <SelectItem value="Pending">
+                            Pending
+                          </SelectItem>
+                          <SelectItem value="In Production">
+                            In Production
+                          </SelectItem>
+                          <SelectItem value="Completed">
+                            Completed
+                          </SelectItem>
+                          <SelectItem value="Cancelled">
+                            Cancelled
+                          </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <Label>Outsource: </Label>
+                  <Select v-model="sub.outsource_statuss_label" @update:model-value="updateSubStatus(sub)">
+                    <SelectTrigger>
+                      <Badge class="w-30" :class="badgeStyle(sub.outsource_statuss_label)">
+                        <SelectValue></SelectValue>
+                      </Badge>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Status</SelectLabel>
+                          <SelectItem value="Not Outsourced">
+                            Not Outsourced
+                          </SelectItem>
+                          <SelectItem value="Waiting Supplier">
+                            Waiting Supplier
+                          </SelectItem>
+                          <SelectItem value="Delivered">
+                            Delivered
+                          </SelectItem>
+                          <SelectItem value="Outsource Cancelled">
+                            Outsource Cancelled
+                          </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            <DrawerFooter>
+              <DrawerClose class="mb-10">
+                <Button variant="outline">
+                  Close
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
 
     </AdminLayout>
 </template>

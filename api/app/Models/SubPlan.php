@@ -15,6 +15,11 @@ class SubPlan extends Model
         'outsource_statuss',
     ];
 
+    protected $appends = [
+        'statuss_label',
+        'outsource_statuss_label',
+    ];
+
     public function getStatussLabelAttribute()
     {
         $map = [
@@ -41,6 +46,11 @@ class SubPlan extends Model
 
     public function plan()
     {
-        return $this->hasMany(Plan::class);
+        return $this->belongsTo(Plan::class, 'plan_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }

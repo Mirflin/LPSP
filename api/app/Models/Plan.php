@@ -43,7 +43,7 @@ class Plan extends Model
     }
     public function subplan()
     {
-        return $this->belongsTo(SubPlan::class);
+        return $this->hasMany(SubPlan::class, 'plan_id');
     }
 
     public function getStatussLabelAttribute()

@@ -401,17 +401,13 @@ class ProductionController extends Controller
 
     public function getPlans(Request $request)
     {
-        $perPage = $request->input('perPage', 10);
-        $page = $request->input('page', 1);
-        $sort = $request->input('sort', 'id');
-        $direction = $request->input('direction', 'asc');
         $search = $request->input('search', '');
         $filters = $request->input('filters', []);
 
         $query = Plan::with([
             'client',
             'user',
-            'subplan',
+            'subplan.product',
             'product.processes.processList',
         ]);
 

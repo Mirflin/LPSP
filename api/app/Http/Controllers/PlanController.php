@@ -153,13 +153,10 @@ class PlanController extends Controller
             0 => 'Not Outsourced',
             1 => 'Waiting Supplier',
             2 => 'Delivered',
-            3 => 'Cancelled'
+            3 => 'Outsource Cancelled'
         ];
 
         $OutreverseMap = array_flip($map);
-
-        Log::info($reverseMap);
-        Log::info($reverseMap[$request->input('status')]);
 
         $plan->statuss = $reverseMap[$request->input('status')];
         $plan->outsource_statuss = $OutreverseMap[$request->input('outstatus')];
@@ -167,8 +164,54 @@ class PlanController extends Controller
 
         $plan->save();
 
+        $plan = Plan::with([
+            'client',
+            'user',
+            'subplan.product',
+            'product.processes.processList',
+        ])->find($request->input('id'));
+
         broadcast(new PlanUpdate($plan))->toOthers();
-        return response()->json(['message' => 'Plan status changed successfully!']);
+        return response()->json(['message' => 'Plan updated successfully!']);
+    }
+
+    public function sub_status(Request $request){
+        $subplan = SubPlan::find($request->input('subId'));
+
+        $map = [
+            0 => 'Pending',
+            1 => 'In Production',
+            2 => 'Completed',
+            3 => 'Cancelled',
+        ];
+
+        $reverseMap = array_flip($map);
+
+        $map = [
+            0 => 'Not Outsourced',
+            1 => 'Waiting Supplier',
+            2 => 'Delivered',
+            3 => 'Outsource Cancelled'
+        ];
+
+        $OutreverseMap = array_flip($map);
+
+        $subplan->statuss = $reverseMap[$request->input('status')];
+        $subplan->outsource_statuss = $OutreverseMap[$request->input('outsource_status')];
+        $subplan->produced = $request->input('produced');
+
+
+        $subplan->save();
+
+        $plan = Plan::with([
+            'client',
+            'user',
+            'subplan.product',
+            'product.processes.processList',
+        ])->find($request->input('id'));
+
+        broadcast(new PlanUpdate($plan))->toOthers();
+        return response()->json(['message' => 'Plan updated successfully!']);
     }
 
     private function mergePdfs(Fpdi $pdf, array $files)
