@@ -10,10 +10,13 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('clients', function ($user) {
-    Log::info('Authorizing product channel for user:', ['id' => $user->id]);
     return true;
 });
 
 Broadcast::channel('product', function ($product) {
+    return true;
+});
+
+Broadcast::channel('plan', function ($plan) {
     return true;
 });

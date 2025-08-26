@@ -102,11 +102,12 @@ const save = async() => {
         'extra_process': generalOptions.value.extra_process
     }
 
-    console.log(data)
     const response = await production.createPlan(data)
     if(response){
         console.log(response)
     }
+    
+    emit('close')
 }
 
 console.log(selectedProduct.value)

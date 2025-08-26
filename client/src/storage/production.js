@@ -15,6 +15,29 @@ export const useProductionStore = defineStore('production', () => {
     const total = ref(0)
     const total_products = ref(0)
 
+    if(!subscribed){
+        let channel = echo.private('plan');
+        channel.listen('.plan_update', (data) => {
+            const plan = plans.value.find(pl => pl.id == data.plan.id)
+
+            plan.statuss = data.plan.statuss
+            plan.statuss_label = data.plan.statuss_label
+
+            plan.outsource_statuss = data.plan.outsource_statuss
+            plan.outsource_statuss_label = data.plan.outsource_statuss_label
+        })
+
+        channel.listen('.plan_new', (data) => {
+            const plan = plans.value.find(pl => pl.id == data.plan.id)
+
+            if(!plan){
+                plans.value.push(data.plan)
+            }
+        })
+
+        subscribed = true
+    }
+    
     const fetchPlan = async (params) => {
         try {
             const res = await axios.get("/api/plans", { params })

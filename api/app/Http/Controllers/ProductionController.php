@@ -411,6 +411,7 @@ class ProductionController extends Controller
         $query = Plan::with([
             'client',
             'user',
+            'subplan',
             'product.processes.processList',
         ]);
 

@@ -12,6 +12,16 @@ import PlanCreate from './PlanCreate.vue';
 import PlusIcon from '@/icons/PlusIcon.vue';
 import moment from 'moment'
 import PlanSheet from './PlanSheet.vue';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import axios from 'axios';
 
 const production = useProductionStore()
 const datatable = ref(null)
@@ -48,6 +58,9 @@ const params = reactive({
   sort_direction: "asc",
   search: ""
 })
+
+const alert_message = ref(null)
+const alert_type = ref(null)
 
 const rows = ref([])         
 const total_rows = ref(0)   
@@ -194,10 +207,25 @@ const setRow = (data) => {
   sheetOpen.value = true
 }
 
+const updateStatus = async(data) => {
+  const response = await axios.post('/api/plan-status', {id: data.value.id, status: data.value.statuss_label, outstatus: data.value.outsource_statuss_label})
+  alert_message.value = response.data.message
+  alert_type.value = 'success'
+  
+  setTimeout(() => {
+    alert_message.value = null
+    alert_type.value = null
+  }, 3000)
+}
 </script>
 
 <template>
     <AdminLayout>
+        <TimedAlert
+          :type="alert_type"
+          :message="alert_message"
+        />
+
         <Modal v-if="showCreateModal">
           <template #body>
             <PlanCreate @close="showCreateModal = false"></PlanCreate>
@@ -277,11 +305,57 @@ const setRow = (data) => {
             </template>
 
             <template #statuss_label="data">
-              <Badge :class="badgeStyle(data.value.statuss_label)">{{data.value.statuss_label}}</Badge>
+              <Select v-model="data.value.statuss_label" @update:model-value="updateStatus(data)">
+                <SelectTrigger>
+                  <Badge :class="badgeStyle(data.value.statuss_label)">
+                    <SelectValue></SelectValue>
+                  </Badge>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Status</SelectLabel>
+                      <SelectItem value="Pending">
+                        Pending
+                      </SelectItem>
+                      <SelectItem value="In Production">
+                        In Production
+                      </SelectItem>
+                      <SelectItem value="Completed">
+                        Completed
+                      </SelectItem>
+                      <SelectItem value="Cancelled">
+                        Cancelled
+                      </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </template>
 
             <template #outsource_statuss_label="data">
-              <Badge :class="badgeStyle(data.value.outsource_statuss_label)">{{data.value.outsource_statuss_label}}</Badge>
+              <Select v-model="data.value.outsource_statuss_label" @update:model-value="updateStatus(data)">
+                <SelectTrigger>
+                  <Badge :class="badgeStyle(data.value.outsource_statuss_label)">
+                    <SelectValue></SelectValue>
+                  </Badge>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Status</SelectLabel>
+                      <SelectItem value="Not Outsourced">
+                        Not Outsourced
+                      </SelectItem>
+                      <SelectItem value="Waiting Supplier">
+                        Waiting Supplier
+                      </SelectItem>
+                      <SelectItem value="Delivered">
+                        Delivered
+                      </SelectItem>
+                      <SelectItem value="Outsource Cancelled">
+                        Outsource Cancelled
+                      </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </template>
             
             <template #created_at="data">
@@ -295,7 +369,7 @@ const setRow = (data) => {
         <Sheet v-model:open="sheetOpen">
             <SheetContent>
                 <SheetHeader class="mt-25">
-                    <SheetTitle>Editing {{ sheetRow }}</SheetTitle>
+                    <SheetTitle>Editing {{ sheetRow.po_nr }}</SheetTitle>
                     <SheetDescription>
                     </SheetDescription>
                 </SheetHeader>

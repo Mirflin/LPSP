@@ -9,8 +9,11 @@ use App\Jobs\GoogleDriveRaw;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
 use App\Models\Plan;
+use App\Models\SubPlan;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use App\Events\PlanUpdate;
+use App\Events\NewPlan;
 
 class PlanController extends Controller
 {
@@ -59,7 +62,15 @@ class PlanController extends Controller
 
         $isOutsourced = false;
         $product = Product::with([            
-            'processes.processList',                
+            'client',                      
+            'processes.processList',        
+            'materials',
+            'children.client',
+            'children.processes.processList',
+            'children.materials',
+            'children.files',                    
+            'children',                     
+            'files'           
         ])->find($validated['product_id']);
         
         foreach($product['processes'] as $process){
@@ -68,7 +79,7 @@ class PlanController extends Controller
             }
         }
 
-        Plan::create([
+        $plan = Plan::create([
             'po_date' => $validated['po_date'],
             'po_nr' => $validated['po_nr'],
             'client_id' => $validated['client_id'],
@@ -80,6 +91,29 @@ class PlanController extends Controller
             'outsource_statuss' => $isOutsourced ? 1 : 0
         ]);
 
+        foreach($product['children'] as $child){
+
+            foreach($child['processes'] as $process){
+                if($process['processList']['name'] == 'Outsourcing'){
+                    $isOutsourced = true;
+                }
+            }
+
+            SubPlan::create([
+                'plan_id' => $plan->id,
+                'product_id' => $child['id'],
+                'outsource_statuss' => $isOutsourced ? 1 : 0
+            ]);   
+        }
+
+        $query = Plan::with([
+            'client',
+            'user',
+            'subplan',
+            'product.processes.processList',
+        ])->find($plan->id);
+
+        broadcast(new NewPlan($query))->toOthers();
         return response()->json(['message' => 'Plan created successfully!']);
     }
 
@@ -101,6 +135,40 @@ class PlanController extends Controller
         return response($pdfContent)
         ->header('Content-Type', 'application/pdf')
         ->header('Content-Disposition', 'inline; filename="merged.pdf"');
+    }
+
+    public function status(Request $request){
+        $plan = Plan::find($request->input('id'));
+
+        $map = [
+            0 => 'Pending',
+            1 => 'In Production',
+            2 => 'Completed',
+            3 => 'Cancelled',
+        ];
+
+        $reverseMap = array_flip($map);
+
+        $map = [
+            0 => 'Not Outsourced',
+            1 => 'Waiting Supplier',
+            2 => 'Delivered',
+            3 => 'Cancelled'
+        ];
+
+        $OutreverseMap = array_flip($map);
+
+        Log::info($reverseMap);
+        Log::info($reverseMap[$request->input('status')]);
+
+        $plan->statuss = $reverseMap[$request->input('status')];
+        $plan->outsource_statuss = $OutreverseMap[$request->input('outstatus')];
+
+
+        $plan->save();
+
+        broadcast(new PlanUpdate($plan))->toOthers();
+        return response()->json(['message' => 'Plan status changed successfully!']);
     }
 
     private function mergePdfs(Fpdi $pdf, array $files)

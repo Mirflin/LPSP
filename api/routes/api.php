@@ -90,6 +90,10 @@ Route::post('/plan-create', [PlanController::class, 'create'])
     ->middleware('auth:sanctum')
     ->name('production.plan.create');
 
+Route::post('/plan-status', [PlanController::class, 'status'])
+    ->middleware('auth:sanctum')
+    ->name('production.plan.status');
+
 Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);
 
