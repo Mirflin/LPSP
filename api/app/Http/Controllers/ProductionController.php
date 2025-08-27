@@ -403,6 +403,7 @@ class ProductionController extends Controller
     {
         $search = $request->input('search', '');
         $filters = $request->input('filters', []);
+        $completed = $request->input('completed');
 
         $query = Plan::with([
             'client',
@@ -493,6 +494,14 @@ class ProductionController extends Controller
                 }
             }
         }
+
+        if(strval($completed) == 'true'){
+            $query->where('statuss', 2);
+        } else{
+            $query->where('statuss', '!=' , 2);
+        }
+
+        $query->orderBy('created_at', 'desc');
 
         $total = $query->count();
 

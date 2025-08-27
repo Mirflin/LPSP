@@ -97,6 +97,14 @@ Route::post('/subplan-status', [PlanController::class, 'sub_status'])
     ->middleware('auth:sanctum')
     ->name('production.plan.sub_status');
 
+Route::patch('/plan-produced', [PlanController::class, 'produced'])
+    ->middleware('auth:sanctum')
+    ->name('production.plan.produced');
+
+Route::post('/plan-download', [PlanController::class, 'downloadActual'])
+    ->middleware('auth:sanctum')
+    ->name('production.plan.download');
+
 Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);
 

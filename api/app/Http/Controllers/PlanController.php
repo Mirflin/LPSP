@@ -48,7 +48,6 @@ class PlanController extends Controller
     }
 
     public function create(Request $request) {
-        Log::info($request);
         $validated = $request->validate([
             'po_date' => 'required|string',
             'po_nr' => 'required|string',
@@ -109,7 +108,7 @@ class PlanController extends Controller
         $query = Plan::with([
             'client',
             'user',
-            'subplan',
+            'subplan.product',
             'product.processes.processList',
         ])->find($plan->id);
 
@@ -117,24 +116,64 @@ class PlanController extends Controller
         return response()->json(['message' => 'Plan created successfully!']);
     }
 
+    public function produced(Request $request){
+        $produced = $request->input('produced');
+        $sended = $request->input('sended');
+        $plan_id = $request->input('id');
+
+        $plan = Plan::find($plan_id);
+
+        $plan->produced = $produced;
+        $plan->sended = $sended;
+
+        $plan->save();
+
+        return response()->json(['message' => 'Updated successfully']);
+    }
+
     public function downloadFiles(Request $request)
     {
         $product = $request->input('product');
-        $pdf = new Fpdi();
-
-        $this->mergePdfs($pdf, $product['files'] ?? []);
+        $allFiles = $product['files'] ?? [];
 
         if (!empty($product['children'])) {
             foreach ($product['children'] as $child) {
-                $this->mergePdfs($pdf, $child['files'] ?? []);
+                if (!empty($child['files'])) {
+                    $allFiles = array_merge($allFiles, $child['files']);
+                }
             }
         }
 
-        $pdfContent = $pdf->Output('S');
+        $totalPages = 0;
+        $lastFilePath = null;
+        foreach ($allFiles as $file) {
+            $path = Storage::disk('public')->path($file['path']);
+            if (!file_exists($path) || filesize($path) === 0) continue;
+            if (mime_content_type($path) !== 'application/pdf') continue;
 
-        return response($pdfContent)
-        ->header('Content-Type', 'application/pdf')
-        ->header('Content-Disposition', 'inline; filename="merged.pdf"');
+            try {
+                $pdfTmp = new Fpdi();
+                $count = $pdfTmp->setSourceFile($path);
+                $totalPages += $count;
+                $lastFilePath = $path;
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        if ($totalPages === 1 && $lastFilePath) {
+            return response()->file($lastFilePath, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="single.pdf"'
+            ]);
+        }
+
+        $pdf = new Fpdi();
+        $this->mergePdfs($pdf, $allFiles);
+
+        return response($pdf->Output('S'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="merged.pdf"');
     }
 
     public function status(Request $request){
@@ -214,20 +253,35 @@ class PlanController extends Controller
         return response()->json(['message' => 'Plan updated successfully!']);
     }
 
+    public function downloadActual(Request $request){
+        $plan_nr = $request->input('plan_nr');
+        $path = Storage::disk('public')->path('plans/'.$plan_nr.'/plan-'.$plan_nr.'.pdf');
+
+        return response()->download($path);
+    }
+
     private function mergePdfs(Fpdi $pdf, array $files)
     {
         foreach ($files as $file) {
             $path = Storage::disk('public')->path($file['path']);
-            if (!file_exists($path)) continue;
-            $mime = mime_content_type($path);
-            if ($mime !== 'application/pdf') continue;
 
-            $pageCount = $pdf->setSourceFile($path);
-            for ($i = 1; $i <= $pageCount; $i++) {
-                $tplIdx = $pdf->importPage($i);
-                $size = $pdf->getTemplateSize($tplIdx);
-                $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
-                $pdf->useTemplate($tplIdx);
+            // Ensure file is valid
+            if (!file_exists($path) || filesize($path) === 0) continue;
+            if (mime_content_type($path) !== 'application/pdf') continue;
+
+            try {
+                $pageCount = $pdf->setSourceFile($path);
+                for ($i = 1; $i <= $pageCount; $i++) {
+                    $tplIdx = $pdf->importPage($i);
+                    if (!$tplIdx) continue;
+
+                    $size = $pdf->getTemplateSize($tplIdx);
+                    $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
+                    $pdf->AddPage($orientation, [$size['width'], $size['height']]);
+                    $pdf->useTemplate($tplIdx);
+                }
+            } catch (\Exception $e) {
+                Log::error("PDF merge error: ".$e->getMessage());
             }
         }
     }

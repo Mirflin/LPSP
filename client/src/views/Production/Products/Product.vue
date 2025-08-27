@@ -258,7 +258,7 @@ const currentPageTitle = 'Products'
             :sortColumn="params.sort_column"
             :sortDirection="params.sort_direction"
             :isServerMode="true"
-            :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer'" 
+            :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer dark:hover:bg-blue-900'" 
             @rowClick="update_row"
             @change="changeServer"
         >

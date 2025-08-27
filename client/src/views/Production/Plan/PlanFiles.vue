@@ -15,7 +15,7 @@ let merger = new PDFMerger()
 const options = reactive({
     bom: true,
     drawing: true,
-    others: false,
+    others: true,
 })
 
 const props = defineProps(['selectedProduct'])
@@ -63,20 +63,6 @@ const printFiles = async() => {
     <iframe id="pdfFrame2" style="width:0; height:0; border:0;"></iframe>
     <!--<PlanIframe v-if="printing" :loading="loading" :pdfFiles="fileArr"></PlanIframe>-->
     <div class="w-full p-5">
-        <div class="flex gap-5 mb-5">
-            <div class="flex gap-3 items-center">
-                <Checkbox v-model="options.bom"></Checkbox>
-                <Label>Download BOM?</Label>
-            </div>
-            <div class="flex gap-3 items-center">
-                <Checkbox v-model="options.drawing"></Checkbox>
-                <Label>Download Drawings?</Label>
-            </div>
-            <div class="flex gap-3 items-center">
-                <Checkbox v-model="options.others"></Checkbox>
-                <Label>Download Others?</Label>
-            </div>
-        </div>
         <Separator></Separator>
         <h1 class="mt-5 text-xl">Files to download: </h1>
         <div>

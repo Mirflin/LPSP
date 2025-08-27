@@ -316,7 +316,7 @@ const rowClick = async (row) => {
             pageSize="20"
             skin="bh-table-compact"
             class="table-test"
-            :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer'"
+            :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer dark:hover:bg-blue-900'"
             @rowClick="rowClick"
             @sortChange="changeServer"
         >

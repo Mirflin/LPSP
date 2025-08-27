@@ -66,8 +66,10 @@ const params = reactive({
   pagesize: 10,
   sort_column: "id",
   sort_direction: "asc",
-  search: ""
+  search: "",
 })
+
+const completed = ref(false)
 
 const alert_message = ref(null)
 const alert_type = ref(null)
@@ -77,7 +79,7 @@ const total_rows = ref(0)
 const searchInput = ref("")
 const isOpen = ref(false)
 
-const showCreateModal = ref(false)
+const showCreateModal = ref()
 
 let timeout = null
 
@@ -105,7 +107,8 @@ const fetchData = async () => {
       sort: params.sort_column,
       direction: params.sort_direction,
       search: params.search,
-      filters: filters.value
+      filters: filters.value,
+      completed: completed.value
     })
 
     rows.value = production.plans
@@ -143,6 +146,12 @@ const badgeStyle = (label) => {
     case "Not Outsourced":
       return 'bg-gray-500'
   }
+}
+
+const timed = async() => {
+  setTimeout(() => {
+    fetchData()
+  }, 200)
 }
 
 const exportTable = () => {
@@ -219,30 +228,60 @@ const setRow = (data) => {
 
 const updateStatus = async(data) => {
   const response = await axios.post('/api/plan-status', {id: data.value.id, status: data.value.statuss_label, outstatus: data.value.outsource_statuss_label})
-  alert_message.value = response.data.message
-  alert_type.value = 'success'
-
-  setTimeout(() => {
-    alert_message.value = null
-    alert_type.value = null
-  }, 2000)
 }
 
 const updateSubStatus = async(data) => {
   const response = await axios.post('/api/subplan-status', {id: data.plan_id, subId: data.id, status: data.statuss_label, outsource_status: data.outsource_statuss_label, produced: data.produced})
-  
-  alert_message.value = response.data.message
-  alert_type.value = 'success'
-  setTimeout(() => {
-    alert_message.value = null
-    alert_type.value = null
-  }, 2000)
+}
+
+const updateProduced = async() => {
+  const response = await axios.patch('/api/plan-produced', {id: sheetRow.value.id, produced: sheetRow.value.produced, sended: sheetRow.value.sended})
+  console.log(response)
+}
+
+const download_print_plan = async(po_nr, type) => {
+  const response = await axios.post('/api/plan-download', {plan_nr: po_nr}, {
+    responseType: "blob",
+    withCredentials: true
+  })
+
+  if(response.status == 200){
+    if(type == 'download'){
+      const fileURL = window.URL.createObjectURL(response.data);
+      const a = document.createElement("a");
+      a.href = fileURL;
+      a.download = 'plan-'+po_nr+'.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      window.URL.revokeObjectURL(fileURL);
+    }else{
+      const blob = new Blob([response.data], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+
+      const iframe = document.getElementById('pdfFrame3');
+      iframe.src = url;
+      iframe.onload = () => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      };
+    }
+  }else{
+    alert_message.value = 'Plan not found!'
+    alert_type.value = 'error'
+    setTimeout(() => {
+      alert_message.value = null
+      alert_type.value = null
+    }, 2000)
+  }
 }
 
 </script>
 
 <template>
     <AdminLayout>
+        <iframe id="pdfFrame3" style="display: none;"></iframe>
         <TimedAlert
           :type="alert_type"
           :message="alert_message"
@@ -276,29 +315,33 @@ const updateSubStatus = async(data) => {
             <Button @click="exportTable" class="bg-green-500 hover:bg-green-300">Export to excel</Button>
           </div>
 
-            <div class="flex items-center gap-5">
-              <PlusIcon @click="showCreateModal = true" class="text-green-500 w-5 cursor-pointer scale-300 rounded-md hover:bg-gray-100 transition"></PlusIcon>
-              <button @click="fetchData" :disabled="refreshTimeout" class="p-2 rounded-md hover:bg-gray-100 transition">
-                <RefreshIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 transition" />
-              </button>
-              <input
-                type="text"
-                v-model="searchInput"
-                placeholder="Global search"
-                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              />
-            </div>
+          <div class="flex items-center gap-2">
+            <Checkbox :default-value="false" @update:modelValue="timed" v-model="completed"></Checkbox>
+            <Label>Completed plans?</Label>
+          </div>
 
-            <ul v-if="isOpen" class="absolute left-0 mt-13 p-2.5 min-w-[150px] bg-white rounded shadow-md space-y-1 z-20 dark:bg-dark-900 h-auto w-40 rounded-lg border border-gray-200 py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 dark:border-gray-800 dark:bg-gray-800 dark:text-white dark:placeholder:text-white/30 dark:focus:border-brand-800">
-              <li v-for="col in cols" :key="col.field">
-                  <label class="flex items-center gap-2 w-full cursor-pointer">
-                      <input type="checkbox" class="form-checkbox" :checked="!col.hide" @change="col.hide = !$event.target.checked" />
-                      <span>{{ col.title }}</span>
-                  </label>
-              </li>
-            </ul>
+          <div class="flex items-center gap-5">
+            <PlusIcon @click="showCreateModal = true" class="text-green-500 w-5 cursor-pointer scale-300 rounded-md hover:bg-gray-100 transition"></PlusIcon>
+            <button @click="fetchData" :disabled="refreshTimeout" class="p-2 rounded-md hover:bg-gray-100 transition">
+              <RefreshIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 transition" />
+            </button>
+            <input
+              type="text"
+              v-model="searchInput"
+              placeholder="Global search"
+              class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+            />
+          </div>
+
+          <ul v-if="isOpen" class="absolute left-0 mt-13 p-2.5 min-w-[150px] bg-white rounded shadow-md space-y-1 z-20 dark:bg-dark-900 h-auto w-40 rounded-lg border border-gray-200 py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 dark:border-gray-800 dark:bg-gray-800 dark:text-white dark:placeholder:text-white/30 dark:focus:border-brand-800">
+            <li v-for="col in cols" :key="col.field">
+                <label class="flex items-center gap-2 w-full cursor-pointer">
+                    <input type="checkbox" class="form-checkbox" :checked="!col.hide" @change="col.hide = !$event.target.checked" />
+                    <span>{{ col.title }}</span>
+                </label>
+            </li>
+          </ul>
         </div>
-
         <vue3-datatable
             ref="datatable"
             :rows="rows"
@@ -313,7 +356,7 @@ const updateSubStatus = async(data) => {
             :isServerMode="true"
             :stickyHeader="true"
             class="table-test min-h-100"
-            :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer'"
+            :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer dark:hover:bg-blue-900'"
             @change="changeServer"
             @rowClick="setRow"
         >
@@ -389,77 +432,91 @@ const updateSubStatus = async(data) => {
         </vue3-datatable>
 
         <Drawer v-model:open="sheetOpen">
-          <DrawerContent class="h-200">
+          <DrawerContent class="h-250">
             <DrawerHeader class="hidden">
               <DrawerTitle>Are you absolutely sure?</DrawerTitle>
               <DrawerDescription>This action cannot be undone.</DrawerDescription>
             </DrawerHeader>
             
-            <div class="p-4">
-              <h1 class="text-xl mb-5">Plan nr. {{ sheetRow.po_nr }}</h1>
-              <div class="flex justify-between">
-                <div class="flex gap-5">
-                  <Button class="bg-green-500 hover:bg-green-400">Print plan</Button>
-                  <Button class="bg-blue-500 hover:bg-blue-400">Download plan</Button>
+            <div class="flex justify-center items-center w-full">
+              <div class="p-4 w-250">
+                <h1 class="text-xl mb-5">Plan nr. {{ sheetRow.po_nr }}</h1>
+                <div class="flex justify-between">
+
+                  <div class="flex gap-5">
+                    <Button @click="download_print_plan(sheetRow.po_nr, 'print')" class="bg-green-500 hover:bg-green-400">Print plan</Button>
+                    <Button @click="download_print_plan(sheetRow.po_nr, 'download')" class="bg-blue-500 hover:bg-blue-400">Download plan</Button>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <Label>Produced: </Label>
+                    <Input @change="updateProduced" type="number" v-model="sheetRow.produced" class="w-20"></Input>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <Label>Sended: </Label>
+                    <Input @change="updateProduced" type="number" v-model="sheetRow.sended" class="w-20"></Input>
+                  </div>
+
+                  <Button disabled class="bg-red-500 hover:bg-red-400">Delete</Button>
                 </div>
-                <Button class="bg-red-500 hover:bg-red-400">Delete</Button>
-              </div>
-              <h1 class="mt-5">Subproduction</h1>
-              <div class="border-1 h-85 rounded-md p-5 overflow-auto mt-1" v-auto-animate>
-                <div v-for="sub in sheetRow.subplan" class="w-full border-1 h-15 rounded-md flex p-2 justify-between items-center hover:bg-gray-100">
-                  {{ sub.product.drawing_nr }}
-                  <Label>Produced: </Label>
-                  <Input @change="updateSubStatus(sub)" class="w-20" v-model="sub.produced"></Input>
-                  <Label>Status: </Label>
-                  <Select v-model="sub.statuss_label" @update:model-value="updateSubStatus(sub)">
-                    <SelectTrigger>
-                      <Badge class="w-20" :class="badgeStyle(sub.statuss_label)">
-                        <SelectValue></SelectValue>
-                      </Badge>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Status</SelectLabel>
-                          <SelectItem value="Pending">
-                            Pending
-                          </SelectItem>
-                          <SelectItem value="In Production">
-                            In Production
-                          </SelectItem>
-                          <SelectItem value="Completed">
-                            Completed
-                          </SelectItem>
-                          <SelectItem value="Cancelled">
-                            Cancelled
-                          </SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  <Label>Outsource: </Label>
-                  <Select v-model="sub.outsource_statuss_label" @update:model-value="updateSubStatus(sub)">
-                    <SelectTrigger>
-                      <Badge class="w-30" :class="badgeStyle(sub.outsource_statuss_label)">
-                        <SelectValue></SelectValue>
-                      </Badge>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Status</SelectLabel>
-                          <SelectItem value="Not Outsourced">
-                            Not Outsourced
-                          </SelectItem>
-                          <SelectItem value="Waiting Supplier">
-                            Waiting Supplier
-                          </SelectItem>
-                          <SelectItem value="Delivered">
-                            Delivered
-                          </SelectItem>
-                          <SelectItem value="Outsource Cancelled">
-                            Outsource Cancelled
-                          </SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                <h1 class="mt-5">Subproduction</h1>
+                <div class="border-1 h-85 rounded-md p-5 overflow-auto mt-1" v-auto-animate>
+                  <div v-for="sub in sheetRow.subplan" class="w-full border-1 h-15 rounded-md flex p-2 justify-between items-center hover:bg-gray-100">
+                    {{ sub.product.drawing_nr }}
+                    <Label>Produced: </Label>
+                    <Input type="number" @change="updateSubStatus(sub)" class="w-20" v-model="sub.produced"></Input>
+                    <Label>Status: </Label>
+                    <Select v-model="sub.statuss_label" @update:model-value="updateSubStatus(sub)">
+                      <SelectTrigger>
+                        <Badge class="w-20" :class="badgeStyle(sub.statuss_label)">
+                          <SelectValue></SelectValue>
+                        </Badge>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Status</SelectLabel>
+                            <SelectItem value="Pending">
+                              Pending
+                            </SelectItem>
+                            <SelectItem value="In Production">
+                              In Production
+                            </SelectItem>
+                            <SelectItem value="Completed">
+                              Completed
+                            </SelectItem>
+                            <SelectItem value="Cancelled">
+                              Cancelled
+                            </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <Label>Outsource: </Label>
+                    <Select v-model="sub.outsource_statuss_label" @update:model-value="updateSubStatus(sub)">
+                      <SelectTrigger>
+                        <Badge class="w-30" :class="badgeStyle(sub.outsource_statuss_label)">
+                          <SelectValue></SelectValue>
+                        </Badge>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Status</SelectLabel>
+                            <SelectItem value="Not Outsourced">
+                              Not Outsourced
+                            </SelectItem>
+                            <SelectItem value="Waiting Supplier">
+                              Waiting Supplier
+                            </SelectItem>
+                            <SelectItem value="Delivered">
+                              Delivered
+                            </SelectItem>
+                            <SelectItem value="Outsource Cancelled">
+                              Outsource Cancelled
+                            </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </div>
