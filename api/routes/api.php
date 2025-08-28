@@ -7,6 +7,7 @@ use App\Http\Controllers\LPSPcreds;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\PlanConfirm;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
 
@@ -104,6 +105,10 @@ Route::patch('/plan-produced', [PlanController::class, 'produced'])
 Route::post('/plan-download', [PlanController::class, 'downloadActual'])
     ->middleware('auth:sanctum')
     ->name('production.plan.download');
+
+Route::get('/plan-confirmation', [PlanConfirm::class, 'getData'])
+    ->middleware('auth:sanctum')
+    ->name('production.plan.confirm');
 
 Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);

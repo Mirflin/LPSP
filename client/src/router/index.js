@@ -226,6 +226,24 @@ const router = createRouter({
         requireAuth: true
       },
     },
+    {
+      path: '/invoice',
+      name: 'Invoice',
+      component: () => import('../views/Production/Invoices/Invoices.vue'),
+      meta: {
+        title: 'InvoiceView',
+        requireAuth: true
+      },
+    },
+    {
+      path: '/pconfirm',
+      name: 'PlanConfirm',
+      component: () => import('../views/Production/Plan_confirmation/PlanConfirmation.vue'),
+      meta: {
+        title: 'PlanConfirm',
+        requireAuth: true
+      },
+    },
   ],
 })
 

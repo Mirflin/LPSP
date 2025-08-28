@@ -261,6 +261,8 @@ const menuGroups = [
         name: "Production",
         icon: PaperclipIcon,
         subItems: [
+          { name: "Invoice", path: "/invoice", pro: false },
+          { name: "Plan Confirmation", path: "/pconfirm", pro: false },
           { name: "Plan", path: "/plan", pro: false },
           { name: "Product", path: "/product", pro: false },
           { name: "Materials", path: "/materials", pro: false },

@@ -312,7 +312,7 @@ const download_print_plan = async(po_nr, type) => {
                     <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
             </button>
-            <Button @click="exportTable" class="bg-green-500 hover:bg-green-300">Export to excel</Button>
+            <Button disabled @click="exportTable" class="bg-green-500 hover:bg-green-300">Export to excel</Button>
           </div>
 
           <div class="flex items-center gap-2">
