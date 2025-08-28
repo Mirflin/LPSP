@@ -53,6 +53,7 @@ class Plan extends Model
             1 => 'In Production',
             2 => 'Completed',
             3 => 'Cancelled',
+            4 => 'Aproved',
         ];
 
         return $map[$this->statuss] ?? 'Unknown';

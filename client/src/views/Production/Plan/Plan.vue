@@ -134,6 +134,8 @@ const badgeStyle = (label) => {
   switch(label){
     case "Pending":
       return 'bg-yellow-500'
+    case "Aproved":
+      return 'bg-orange-400'
     case "In Production":
     case "Waiting Supplier":
       return 'bg-blue-500'
@@ -382,6 +384,9 @@ const download_print_plan = async(po_nr, type) => {
                       <SelectItem value="Pending">
                         Pending
                       </SelectItem>
+                      <SelectItem value="Aproved">
+                        Aproved
+                      </SelectItem>
                       <SelectItem value="In Production">
                         In Production
                       </SelectItem>
@@ -478,6 +483,9 @@ const download_print_plan = async(po_nr, type) => {
                           <SelectLabel>Status</SelectLabel>
                             <SelectItem value="Pending">
                               Pending
+                            </SelectItem>
+                            <SelectItem value="Aproved">
+                              Aproved
                             </SelectItem>
                             <SelectItem value="In Production">
                               In Production

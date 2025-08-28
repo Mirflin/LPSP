@@ -1,7 +1,7 @@
 <script setup>
 import { CircleX } from 'lucide-vue-next'
 import Multiselect from 'vue-multiselect'
-import {onMounted, ref, reactive} from 'vue'
+import {onMounted, ref, reactive, computed} from 'vue'
 import axios from 'axios'
 import {
   Tabs, TabsContent, TabsList, TabsTrigger
@@ -99,8 +99,11 @@ const save = async() => {
         'product_id': selectedProduct.value.id,
         'price': generalOptions.value.price_for_one,
         'total': generalOptions.value.total,
-        'extra_process': generalOptions.value.extra_process
+        'extra_process': generalOptions.value.extra_process,
+        'childs': selectedProduct.value.children
     }
+
+    console.log(data)
 
     const response = await production.createPlan(data)
     if(response){
@@ -108,6 +111,24 @@ const save = async() => {
     }
     
     emit('close')
+}
+
+const newTotal = () => {
+    let result = generalOptions.value.price_for_one * parseInt(generalOptions.value.count)
+    
+    for(const child of selectedProduct.value.children){
+        console.log(child, child.cost)
+        result = parseFloat(result) + (parseFloat(child.cost) * (child.count * generalOptions.value.count))
+    }
+
+    generalOptions.value.total = result
+    return result
+}
+
+const costSetup = () => {
+    for(const child of selectedProduct.value.children){
+        child.cost = 0
+    }
 }
 
 console.log(selectedProduct.value)
@@ -141,27 +162,27 @@ console.log(selectedProduct.value)
             </TabsList>
 
             <div v-if="!initLoading">
-                <TabsContent value="general" class="flex flex-col gap-5">
-                    <div class="flex flex-col gap-2">
+                <TabsContent value="general" class="flex flex-col gap-5 w-full justify-center items-center">
+                    <div class="flex flex-col gap-2 w-100 mt-10">
                         <Label>PO number: <span class="text-error-500">*</span></Label>
                         <Input v-model="generalOptions.po_nr" placeholder="12345..."></Input>
                     </div>
-                    <div class="flex flex-col gap-2">
+                    <div class="flex flex-col gap-2 w-100">
                         <Label>Product count: <span class="text-error-500">*</span></Label>
                         <Input v-model="generalOptions.count" placeholder="10, 20, 30..."></Input>
                     </div>
-                    <div class="flex flex-col gap-2">
+                    <div class="flex flex-col gap-2 w-100">
                         <Label>PO term: <span class="text-error-500">*</span></Label>
                         <VueDatePicker :hide-navigation="['time']" v-model="generalOptions.po_date" model-type="dd.MM.yyyy" :enable-time="false"></VueDatePicker>
                     </div>
-                    <div class="flex flex-col gap-2">
+                    <div class="flex flex-col gap-2 w-100">
                         <Label>Extra process: </Label>
                         <Input v-model="generalOptions.extra_process"></Input>
                     </div>
                 </TabsContent>
 
                 <TabsContent value="product">
-                    <multiselect v-model="selectedProduct" id="ajax" label="name" track-by="drawing_nr" placeholder="Type to search"
+                    <multiselect v-model="selectedProduct" @update:modelValue="costSetup" id="ajax" label="name" track-by="drawing_nr" placeholder="Type to search"
                         open-direction="bottom" :options="products" :multiple="false" :searchable="true" :loading="loading"
                         :internal-search="false" :clear-on-select="false" :close-on-select="true" :options-limit="10"
                         :limit="1" :max-height="600" :show-no-results="false" :hide-selected="true"
@@ -307,17 +328,30 @@ console.log(selectedProduct.value)
                     <PlanFiles :selectedProduct="selectedProduct"></PlanFiles>
                 </TabsContent>
 
-                <TabsContent value="summary" class="flex flex-row flex-wrap gap-5 justify-center mt-5">
+                <TabsContent value="summary" class="flex flex-col items-center flex-wrap gap-5 justify-center mt-5">
+
                     <div class="w-1/2">
-                        <Label class="mb-3">Price for one</Label>
-                        <Input type="number" v-model="generalOptions.price_for_one" @input="generalOptions.total = generalOptions.price_for_one * generalOptions.count" min="0"></Input>
+                        <Label class="mb-3"> Product {{ selectedProduct.drawing_nr }} price for one</Label>
+                        <Input type="number" v-model="generalOptions.price_for_one" @input="newTotal" min="0"></Input>
                     </div>
+
+                    <div v-for="(child, index) in selectedProduct.children" class="w-1/2">
+
+                        <Label class="mb-3 w-full"> Product {{ child.drawing_nr }} price for one</Label>
+                        <Input type="number" v-model="child.cost" @input="newTotal" min="0"></Input>
+                    </div>
+
                     <Separator></Separator>
                     <div class="w-1/2">
-                        {{ generalOptions.price_for_one ? generalOptions.price_for_one : 0 }} * {{ generalOptions.count }} (product count)
+                        {{ generalOptions.price_for_one ? generalOptions.price_for_one : 0 }} * {{ generalOptions.count }} (product count) = {{ generalOptions.price_for_one * generalOptions.count}} €
+
+                        <div v-for="(child, index) in selectedProduct.children">
+                            {{ child.cost ?? 0  }} * ({{ generalOptions.count }})x{{ child.count }} (product count) = {{  child.cost * child.count * generalOptions.count }} €
+                        </div>
+
                         <p class="mb-2"></p>
                         <Separator></Separator>
-                        <Label class="mb-3 mt-3">Total</Label>
+                        <Label class="mb-3 mt-3">Total:</Label>
                         <p>{{ generalOptions.total }} €</p>
                     </div>
                 </TabsContent>

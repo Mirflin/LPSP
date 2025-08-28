@@ -16,6 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('plan_id');
             $table->unsignedBigInteger('product_id');
             $table->integer('produced')->nullable();
+            $table->integer('planed')->nullable();
+            $table->integer('cost')->nullable();
             $table->unsignedBigInteger('statuss')->nullable()->default(0);
             $table->unsignedBigInteger('outsource_statuss')->nullable()->default(0);
             $table->foreign("plan_id")->references("id")->on("plans")->onDelete("cascade");

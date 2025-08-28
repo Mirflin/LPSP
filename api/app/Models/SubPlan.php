@@ -12,6 +12,7 @@ class SubPlan extends Model
         'product_id',
         'produced',
         'statuss',
+        'cost',
         'outsource_statuss',
     ];
 
@@ -27,6 +28,7 @@ class SubPlan extends Model
             1 => 'In Production',
             2 => 'Completed',
             3 => 'Cancelled',
+            4 => 'Aproved'
         ];
 
         return $map[$this->statuss] ?? 'Unknown';

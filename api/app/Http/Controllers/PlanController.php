@@ -55,6 +55,7 @@ class PlanController extends Controller
             'product_id' => 'required|numeric',
             'price' => 'numeric',
             'total' => 'numeric',
+            'childs' => 'array'
         ]);
         
         $extra_process = $request->input('extra_process', '');
@@ -90,10 +91,10 @@ class PlanController extends Controller
             'outsource_statuss' => $isOutsourced ? 1 : 0
         ]);
 
-        foreach($product['children'] as $child){
+        foreach($validated['childs'] as $child){
 
             foreach($child['processes'] as $process){
-                if($process['processList']['name'] == 'Outsourcing'){
+                if($process['process_list']['name'] == 'Outsourcing'){
                     $isOutsourced = true;
                 }
             }
@@ -101,6 +102,7 @@ class PlanController extends Controller
             SubPlan::create([
                 'plan_id' => $plan->id,
                 'product_id' => $child['id'],
+                'cost' => $child['cost'],
                 'outsource_statuss' => $isOutsourced ? 1 : 0
             ]);   
         }
@@ -184,6 +186,7 @@ class PlanController extends Controller
             1 => 'In Production',
             2 => 'Completed',
             3 => 'Cancelled',
+            4 => 'Aproved'
         ];
 
         $reverseMap = array_flip($map);
@@ -222,6 +225,7 @@ class PlanController extends Controller
             1 => 'In Production',
             2 => 'Completed',
             3 => 'Cancelled',
+            4 => 'Aproved'
         ];
 
         $reverseMap = array_flip($map);

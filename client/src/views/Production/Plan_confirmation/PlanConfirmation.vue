@@ -13,32 +13,54 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {useClientsStore} from '@/storage/clients.js'
+import { useCredsStore } from '@/storage/creds.js'
 
+const creds = useCredsStore()
 const clients = useClientsStore()
 
-const selectedValue = ref(null)
+const selectedClient = ref([])
+
+const rowLoading = ref(false)
+
+const totalPrice = ref(0)
 
 const rows = ref([])
 const loading = ref(false)
 
-const fetchData = async(client_id) => {
-    const response = await axios.get('/api/plan-confirmation', {client_id: client_id});
-    rows.value = response.data.data
-    console.log(rows.value)
+const actual_rows = ref([])
+
+const fetchData = async() => {
+    setTimeout( async() => {
+        rowLoading.value = true
+        const response = await axios.get('/api/plan-confirmation', {
+            params: {
+                client_id: selectedClient.value.id
+            }
+        });
+        totalPrice.value = response.data.total
+        rows.value = response.data.data
+        rowLoading.value = false
+    }, 500)
 }
 
 onMounted(async() => {
     loading.value = true
     await clients.fetchClients()
+    await creds.fetchCreds()
     loading.value = false
 })
+
+const print = async() => {
+    
+}
+
 </script>
 
 <template>
     <AdminLayout>
-        <div v-if="!loading">
-            <div class="mb-5">
-                <Select @update:model-value="fetchData(selectedValue)" v-model="selectedValue">
+        <div v-if="!loading" class="flex flex-col items-center justify-center">
+            <div class="mb-5 flex justify-between w-[210mm]">
+                <Select @update:model-value="fetchData" v-model="selectedClient">
                     <SelectTrigger>
                     <SelectValue placeholder="Select client" />
                     </SelectTrigger>
@@ -46,13 +68,18 @@ onMounted(async() => {
                     <SelectGroup>
                         <SelectLabel>Clients</SelectLabel>
                         <div v-for="client in clients.clients">
-                            <SelectItem :value="client.id">
+                            <SelectItem :value="client">
                                 {{client.name}}
                             </SelectItem>
                         </div>
                     </SelectGroup>
                     </SelectContent>
                 </Select>
+
+                <div class="flex gap-5">
+                    <Button @click="print" class="bg-blue-500 hover:bg-blue-400">Download pdf</Button>
+                    <Button @click="print" class="bg-green-500 hover:bg-green-400">Print pdf</Button>
+                </div>
             </div>
 
             <div ref="pdf" class="w-[210mm] h-[297mm] bg-white p-12 border-2 border-black text-sm font-sans">
@@ -70,11 +97,11 @@ onMounted(async() => {
                             <p>Phone</p>
                         </div>
                         <div class="flex flex-col gap-1">
-                            <p class="w-50">d</p>
-                            <p class="w-50">d</p>
-                            <p class="w-50">d</p>
-                            <p class="w-50">d</p>
-                            <p class="w-50">d</p>
+                            <p class="w-50">{{ creds.creds.name ?? '-' }}</p>
+                            <p class="w-50">{{ creds.creds.address ?? '-' }}</p>
+                            <p class="w-50">{{ creds.creds.bank ?? '-' }}</p>
+                            <p class="w-50">{{ creds.creds.export_address ?? '-' }}</p>
+                            <p class="w-50">{{ creds.creds.phone ?? '-' }}</p>
                         </div>
                     </div>
 
@@ -85,16 +112,16 @@ onMounted(async() => {
                             <p>Iban</p>
                         </div>
                         <div class="flex flex-col gap-1">
-                            <p class="w-27">d</p>
-                            <p class="w-27">d</p>
-                            <p class="w-27">d</p>
+                            <p class="w-27">{{ creds.creds.registration_nr ?? '-' }}</p>
+                            <p class="w-27">{{ creds.creds.vat_nr ?? '-' }}</p>
+                            <p class="w-27">{{ creds.creds.iban ?? '-' }}</p>
                         </div>
                     </div>
                 </div>
                 <Separator></Separator>
-                <h1 class="m-3">Files</h1>
+                <a class="m-3" href="https://drive.google.com/file/d/1ZCXJOuqZk_hw8OhAESjU4BeaxpscIja8/view">LPSP Sales and delivery terms</a>
                 <Separator></Separator>
-                <div class="flex justify-between">
+                <div class="flex justify-between mb-3">
                     <div class="mt-5 flex gap-17">
                         <div class="flex flex-col gap-1">
                             <p>Customer</p>
@@ -104,11 +131,11 @@ onMounted(async() => {
                             <p>Phone</p>
                         </div>
                         <div class="flex flex-col gap-1">
-                            <p class="w-50">d</p>
-                            <p class="w-50">d</p>
-                            <p class="w-50">d</p>
-                            <p class="w-50">d</p>
-                            <p class="w-50">d</p>
+                            <p class="w-50">{{ selectedClient.name ?? '-' }}</p>
+                            <p class="w-50">{{ selectedClient.address ?? '-' }}</p>
+                            <p class="w-50">{{ selectedClient.bank ?? '-' }}</p>
+                            <p class="w-50">{{ selectedClient.delivery_address ?? '-' }}</p>
+                            <p class="w-50">{{ selectedClient.phone ?? '-' }}</p>
                         </div>
                     </div>
 
@@ -119,9 +146,9 @@ onMounted(async() => {
                             <p>Iban</p>
                         </div>
                         <div class="flex flex-col gap-1">
-                            <p class="w-30">d</p>
-                            <p class="w-30">d</p>
-                            <p class="w-30">d</p>
+                            <p class="w-30">{{ selectedClient.registration_nr ?? '-' }}</p>
+                            <p class="w-30">{{ selectedClient.vat_nr ?? '-' }}</p>
+                            <p class="w-30">{{ selectedClient.iban ?? '-'}}</p>
                         </div>
                     </div>
                 </div>
@@ -140,18 +167,49 @@ onMounted(async() => {
                         <th class="border border-gray-300 py-1 px-1">Total</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody v-if="!rowLoading">
+                        <tr ref="actual_rows" v-for="row in rows">
+                            <td class="border border-gray-300 py-1">{{ row.po_nr ?? '-' }}</td>
+                            <td class="border border-gray-300 py-1">{{ row.customer ?? '-' }}</td>
+                            <td class="border border-gray-300 py-1">{{ row.ship_date ?? '-' }}</td>
+                            <td class="border border-gray-300 py-1">{{ row.desc ?? '-' }}</td>
+                            <td class="border border-gray-300 py-1">{{ row.rev ?? '-' }}</td>
+                            <td class="border border-gray-300 py-1">{{ row.ammount ?? '-' }}</td>
+                            <td class="border border-gray-300 py-1">{{ row.price ?? '-' }}</td>
+                            <td class="border border-gray-300 py-1">{{ row.total ?? '-' }}</td>
+                        </tr>
+
                         <tr>
-                            <td class="border border-gray-300 py-1">PO-001</td>
-                            <td class="border border-gray-300 py-1">John Doe Manufacturing Ltd.</td>
-                            <td class="border border-gray-300 py-1">2025-08-27</td>
-                            <td class="border border-gray-300 py-1">High-performance Widget A with extended description</td>
-                            <td class="border border-gray-300 py-1">1</td>
-                            <td class="border border-gray-300 py-1">10</td>
-                            <td class="border border-gray-300 py-1">5.00</td>
-                            <td class="border border-gray-300 py-1">50.00</td>
+                            <td class="border border-gray-300 py-1 h-5"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1 font-bold">Order sum</td>
+                            <td class="border border-gray-300 py-1">{{ totalPrice }}</td>
+                        </tr>
+
+                        <tr v-for="i in (24-actual_rows.length)">
+                            <td class="border border-gray-300 py-1 h-5"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
+                            <td class="border border-gray-300 py-1"></td>
                         </tr>
                     </tbody>
+                    <div 
+                        v-else
+                        class="flex justify-center items-center w-full"
+                    >
+                        <div class="w-20 h-20 border-4 border-transparent text-blue-400 text-4xl animate-spin flex items-center justify-center border-t-blue-400 rounded-full">
+                            <div class="w-16 h-16 border-4 border-transparent text-red-400 text-2xl animate-spin flex items-center justify-center border-t-red-400 rounded-full">
+                            </div>
+                        </div>
+                    </div>
                 </table>
             </div>
         </div>
@@ -161,9 +219,9 @@ onMounted(async() => {
         >
           <div class="w-20 h-20 border-4 border-transparent text-blue-400 text-4xl animate-spin flex items-center justify-center border-t-blue-400 rounded-full">
               <div class="w-16 h-16 border-4 border-transparent text-red-400 text-2xl animate-spin flex items-center justify-center border-t-red-400 rounded-full">
-              </div>
-          </div>
-      </div>
+            </div>
+        </div>
+    </div>
     </AdminLayout>
 </template>
 

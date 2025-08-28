@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('product_id');
             $table->integer('produced')->nullable();
             $table->integer('sended')->nullable();
+            $table->integer('planed')->nullable();
             $table->float('price')->nullable();
             $table->float('total')->nullable();
             $table->integer('statuss')->nullable()->default(0);
