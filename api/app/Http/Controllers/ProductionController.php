@@ -417,6 +417,7 @@ class ProductionController extends Controller
             1 => 'In Production',
             2 => 'Completed',
             3 => 'Cancelled',
+            4 => 'Aproved'
         ];
 
         $reverseMap = array_change_key_case(array_flip($map), CASE_LOWER);

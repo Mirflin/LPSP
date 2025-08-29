@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\PlanConfirm;
 use Illuminate\Support\Facades\Broadcast;
+use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Log;
 
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
@@ -109,6 +110,20 @@ Route::post('/plan-download', [PlanController::class, 'downloadActual'])
 Route::get('/plan-confirmation', [PlanConfirm::class, 'getData'])
     ->middleware('auth:sanctum')
     ->name('production.plan.confirm');
+
+Route::post('/plan-confirmation/print', [PlanConfirm::class, 'print'])
+    ->middleware('auth:sanctum')
+    ->name('production.plan.confirm.print');
+
+Route::get('/invoice-get', [InvoiceController::class, 'getData'])
+    ->middleware('auth:sanctum')
+    ->name('production.invoice.get');
+
+Route::get('/plan-search', [InvoiceController::class, 'getPlan'])
+    ->middleware('auth:sanctum')
+    ->name('production.plan.get');
+
+
 
 Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);

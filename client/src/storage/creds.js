@@ -4,7 +4,7 @@ import {ref, computed, reactive} from 'vue';
 import axios from 'axios';
 
 export const useCredsStore = defineStore('creds', () => {
-    const creds = ref()
+    const creds = ref([])
 
     const fetchCreds = async () => {
         try {

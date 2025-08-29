@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/select'
 import {useClientsStore} from '@/storage/clients.js'
 import { useCredsStore } from '@/storage/creds.js'
+import Multiselect from 'vue-multiselect'
+import { VPdfViewer, useLicense } from "@vue-pdf-viewer/viewer";
 
 const creds = useCredsStore()
 const clients = useClientsStore()
@@ -28,6 +30,8 @@ const rows = ref([])
 const loading = ref(false)
 
 const actual_rows = ref([])
+
+useLicense('eyJkYXRhIjoiZXlKMElqb2labkpsWlMxMGNtbGhiQ0lzSW1GMmRTSTZNVGMxTnpjeU1UVTVPU3dpWkcwaU9pSXhPVEl1TVRZNExqZzRMalE0T2pVeE56TWlMQ0p1SWpvaVltSTNNMlJrT1dWbVlqYzFOell5TUNJc0ltVjRjQ0k2TVRjMU56Y3lNVFU1T1N3aVpHMTBJam9pYzNCbFkybG1hV01pTENKd0lqb2lkbWxsZDJWeUluMD0iLCJzaWduYXR1cmUiOiJwc1gxTGlkbnl2S1NCbW9CUWJoL0l2S2NkMExUOW1BWkh6SG5aQ1FkWkVQRnpaN1lqbmtkVzRrVFhGdUVzbEJIUnBRTDVrTmRqcndsVW43V1lTODlvWG4yekFhSjR1bnBMelpRSUpobUJaNEl1eE0wek53QUI0c2gydCsvR2FEQmF4UU1tZVZSOHpmTmhEYmlGeC9kRmRnMWxHZGVacDRVN1F4YnFJZWFHSjhtTE1vWlNZT1NvdTFzN2dQZ28yN2FMYy9qcXpZRmtKNjFhSXlTUUlFRE9KVVdMUXJRcE56VHBGSXRjNTdHcENYWW9hOElKR1RPaWYzRkZheCsxR0VUTjVyM2pzODlyNE9pZEhYdlJ0ZXJVWUNrcGpUTituMHVmQW1RamNrMkVEVHZLRGI1aXZVam40MDA4QlVxeWY2cjREazRka3o0RlI2Um5RR2lrd1V2dmc9PSJ9')
 
 const fetchData = async() => {
     setTimeout( async() => {
@@ -50,16 +54,64 @@ onMounted(async() => {
     loading.value = false
 })
 
-const print = async() => {
-    
+const pdf = ref('')
+
+const print2 = async() => {
+    const response = await axios.post('/api/plan-confirmation/print', {
+        client_id: selectedClient.value.id
+    }, {
+        responseType: 'blob'
+    });
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
+
+    pdf.value = url
+}
+
+const print = async(type) => {
+    const response = await axios.post('/api/plan-confirmation/print', {
+        client_id: selectedClient.value.id
+    }, {
+        responseType: 'blob'
+    });
+
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
+
+    if(type === 'print'){
+        const iframe = document.getElementById('pdfFrame4');
+        iframe.src = url;
+        iframe.onload = () => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        };
+    }else{
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "PO-confirmation.pdf";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
 }
 
 </script>
 
 <template>
     <AdminLayout>
+        <iframe id="pdfFrame4" style="display: none;"></iframe>
+
         <div v-if="!loading" class="flex flex-col items-center justify-center">
             <div class="mb-5 flex justify-between w-[210mm]">
+
+                <multiselect 
+                    id="single-select-object" v-model="selectedClient" @select="fetchData" deselect-label="Can't remove this value" track-by="name" label="name"
+                    placeholder="Select one" :options="clients.clients" :searchable="true" :allow-empty="false" :close-on-select="true"
+                    aria-label="pick a value" class="mr-60"
+                >
+                </multiselect>
+
+                <!--
                 <Select @update:model-value="fetchData" v-model="selectedClient">
                     <SelectTrigger>
                     <SelectValue placeholder="Select client" />
@@ -75,13 +127,21 @@ const print = async() => {
                     </SelectGroup>
                     </SelectContent>
                 </Select>
+                -->
 
                 <div class="flex gap-5">
-                    <Button @click="print" class="bg-blue-500 hover:bg-blue-400">Download pdf</Button>
-                    <Button @click="print" class="bg-green-500 hover:bg-green-400">Print pdf</Button>
+                    <Button @click="print2" :disabled="rows.length === 0 ? true : false" class="bg-green-500 hover:bg-green-400">Generate pdf</Button>
                 </div>
             </div>
 
+            <div class="h-200 w-full">
+                <VPdfViewer
+                    v-if="pdf"
+                    :src="pdf"
+                />
+            </div>
+
+            <!--
             <div ref="pdf" class="w-[210mm] h-[297mm] bg-white p-12 border-2 border-black text-sm font-sans">
                 <div class="flex items-center">
                     <img src="/images/logo/main-logo.jpg" alt="LPSP Logo" class="h-30" />
@@ -221,6 +281,7 @@ const print = async() => {
               <div class="w-16 h-16 border-4 border-transparent text-red-400 text-2xl animate-spin flex items-center justify-center border-t-red-400 rounded-full">
             </div>
         </div>
+    -->
     </div>
     </AdminLayout>
 </template>
@@ -243,3 +304,5 @@ const print = async() => {
   }
 }
 </style>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
