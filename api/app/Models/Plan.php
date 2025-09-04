@@ -19,6 +19,7 @@ class Plan extends Model
         'statuss',
         'extra_process',
         'invoice',
+        'planed',
         'outsource_statuss',
     ];
 

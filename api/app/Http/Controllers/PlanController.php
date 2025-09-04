@@ -55,7 +55,8 @@ class PlanController extends Controller
             'product_id' => 'required|numeric',
             'price' => 'numeric',
             'total' => 'numeric',
-            'childs' => 'array'
+            'childs' => 'array',
+            'planed' => 'numeric'
         ]);
         
         $extra_process = $request->input('extra_process', '');
@@ -88,6 +89,7 @@ class PlanController extends Controller
             'total' => $validated['total'],
             'extra_process' => $validated['extra_process'] ?? '',
             'user_id' => Auth::user()->id,
+            'planed' => $validated['planed'],
             'outsource_statuss' => $isOutsourced ? 1 : 0
         ]);
 

@@ -19,21 +19,22 @@
 <body>
 <table style="width:187mm; height: 100%; background:#fff; font-size:14px; font-family:sans-serif; border-collapse:separate; border-spacing:0;">
     <tr>
-        <td colspan="2" style="padding-bottom:16px;">
+        <td colspan="2" style="padding-bottom:8px;">
             <table style="width:100%;">
                 <tr>
                     <td style="width:120px; vertical-align:middle;">
                         <img src="{{ public_path('images/main-logo.jpg') }}" alt="LPSP Logo" style="height:120px;" />
                     </td>
                     <td style="text-align:center; vertical-align:middle;">
-                        <h1 style="margin-top:80px; margin-right:140px; font-size:22px; font-weight:600;">Purchase order confirmation</h1>
+                        <h1 style="margin-top:80px; margin-right:140px; font-size:22px; font-weight:600;">Invoice No. LPSP-{{ now()->year }} {{$options['nr']}}</h1>
                     </td>
                 </tr>
             </table>
         </td>
     </tr>
+    {{ now() }}
     <tr>
-        <td colspan="2" style="padding-bottom:12px;">
+        <td colspan="2" style="padding-bottom:6px;">
             <table style="width:100%;">
                 <tr>
                     <td style="vertical-align:top; width:50%;">
@@ -58,13 +59,7 @@
     </tr>
     <tr><td colspan="2"><hr style="border:1px solid #ccc; margin:4px 0;"></td></tr>
     <tr>
-        <td colspan="2" style="padding-bottom:4px;">
-            <a style="margin:12px 0; display:inline-block;" href="https://drive.google.com/file/d/1ZCXJOuqZk_hw8OhAESjU4BeaxpscIja8/view">LPSP Sales and delivery terms</a>
-        </td>
-    </tr>
-    <tr><td colspan="2"><hr style="border:1px solid #ccc; margin:8px 0;"></td></tr>
-    <tr>
-        <td colspan="2" style="padding-bottom:12px;">
+        <td colspan="2" style="padding-bottom:6px;">
             <table style="width:100%;">
                 <tr>
                     <td style="vertical-align:top; width:50%;">
@@ -89,73 +84,124 @@
     </tr>
     <tr><td colspan="2"><hr style="border:1px solid #ccc; margin:4px 0;"></td></tr>
     <tr>
-        <td colspan="2" style="padding-top:12px;">
-            <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;">
-                <thead>
-                    <tr style="background:#f3f3f3;">
-                        <th style="border:1px solid #ccc; padding:2px;  height:15px;">Purchase order No.</th>
-                        <th style="border:1px solid #ccc; padding:2px; min-width:120px;">Customer</th>
-                        <th style="border:1px solid #ccc; padding:2px;">Shipping date</th>
-                        <th style="border:1px solid #ccc; padding:2px; min-width:200px;">Item description</th>
-                        <th style="border:1px solid #ccc; padding:2px;">Rev</th>
-                        <th style="border:1px solid #ccc; padding:2px;">Amount</th>
-                        <th style="border:1px solid #ccc; padding:2px;">Price(EUR)/Pcs Excl. VAT</th>
-                        <th style="border:1px solid #ccc; padding:2px;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php $n=1 ?>
-                    @foreach($rows as $row)
-                    <tr>
-                        <td style="border:1px solid #ccc; padding:2px;  height:15px;">{{ $row['po_nr'] ?? '-' }}</td>
-                        <td style="border:1px solid #ccc; padding:2px;">{{ $row['customer'] ?? '-' }}</td>
-                        <td style="border:1px solid #ccc; padding:2px;">{{ $row['ship_date'] ?? '-' }}</td>
-                        <td style="border:1px solid #ccc; padding:2px;">{{ $row['desc'] ?? '-' }}</td>
-                        <td style="border:1px solid #ccc; padding:2px;">{{ $row['rev'] ?? '-' }}</td>
-                        <td style="border:1px solid #ccc; padding:2px;">{{ $row['ammount'] ?? '-' }}</td>
-                        <td style="border:1px solid #ccc; padding:2px;">{{ $row['price'] ?? '-' }}</td>
-                        <td style="border:1px solid #ccc; padding:2px;">{{ $row['total'] ?? '-' }}</td>
-                    </tr>
-                        @if ( $n % 25 == 0 )
-                            <div style="page-break-before:always;"> </div>
-                        @endif
-
-                        <?php 
-                            if($n == count($rows) && $n % 25 > 0) {
-                                for($i = $n % 25; $i < 25; $i++) {
-                                    if($i == 2){
-                                        echo '<tr>
-                                                <td style="border:1px solid #ccc; padding:2px; height:15px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px; font-weight: bold;">Order sum</td>
-                                                <td style="border:1px solid #ccc; padding:2px;">'. $totalPrice .'</td>
-                                             </tr>';
-                                    }else{
-                                        echo '<tr>
-                                                <td style="border:1px solid #ccc; padding:2px; height:15px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                                <td style="border:1px solid #ccc; padding:2px;"></td>
-                                             </tr>';
-                                    }
-                                }
-                            }
-                        ?>
-
-                        <?php $n++ ?>
-
-                    @endforeach
-                </tbody>
+        <td colspan="2" style="padding-bottom:6px;">
+            <table style="width:100%;">
+                <tr>
+                    <td style="vertical-align:top; width:50%;">
+                        <table>
+                            <tr><td>Payment terms</td> <td style="width:250px;">{{ $options['payment_term'] }}</td></tr>
+                            <tr><td>Terms delivery</td><td style="width:250px;">{{ $options['terms_delivery'] }}</td></tr>
+                            <tr><td>Description</td><td style="width:250px;">{{ $options['description'] }}</td></tr>
+                        </table>
+                    </td>
+                    <td style="vertical-align:top; width:50%;">
+                        <table>
+                            <tr><td style="width:150px;">Dispatch date</td><td style="width:250px;">{{ $options['dispathch'] ?? '-' }}</td></tr>
+                            <tr><td>Delivery with</td><td style="width:250px;">{{ $options['delivery_with'] ?? '-' }}</td></tr>
+                            <tr><td>Country of origin</td><td style="width:250px;">{{ $options['country_of_origin'] ?? '-' }}</td></tr>
+                        </table>
+                    </td>
+                </tr>
             </table>
         </td>
+    </tr>
+    <tr><td colspan="2"><hr style="border:1px solid #ccc; margin:4px 0;"></td></tr>
+    <tr>
+        <table style="width:187mm; margin:0 auto; font-size:11px; border-spacing:0; border-collapse:collapse;">
+        <tr>
+            <td colspan="2" style="padding-top:12px;">
+                <h3 style="margin:0; font-size:14px;">Justification</h3>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <table style="width:100%; border-collapse:collapse; text-align:center;">
+                    <thead>
+                        <tr>
+                            <th style="width:10%; border:1px solid #000; padding:4px; font-size:11px; background:#f8f8f8;">Department</th>
+                            <th style="width:15%; border:1px solid #000; padding:4px; font-size:11px; background:#f8f8f8;">Purchase order</th>
+                            <th style="width:8%; border:1px solid #000; padding:4px; font-size:11px; background:#f8f8f8;">Unit</th>
+                            <th style="width:20%; border:1px solid #000; padding:4px; font-size:11px; background:#f8f8f8;">Item</th>
+                            <th style="width:10%; border:1px solid #000; padding:4px; font-size:11px; background:#f8f8f8;">QTY</th>
+                            <th style="width:12%; border:1px solid #000; padding:4px; font-size:11px; background:#f8f8f8;">Price Eur/pcs</th>
+                            <th style="width:10%; border:1px solid #000; padding:4px; font-size:11px; background:#f8f8f8;">Discount (%)</th>
+                            <th style="width:10%; border:1px solid #000; padding:4px; font-size:11px; background:#f8f8f8;">VAT (%)</th>
+                            <th style="width:15%; border:1px solid #000; padding:4px; font-size:11px; background:#f8f8f8;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($rows as $row)
+                        <tr>
+                            <td style="border:1px solid #000; padding:4px; font-size:11px;">{{ $row['dep'] }}</td>
+                            <td style="border:1px solid #000; padding:4px; font-size:11px;">{{ $row['order'] }}</td>
+                            <td style="border:1px solid #000; padding:4px; font-size:11px;">pcs.</td>
+                            <td style="border:1px solid #000; padding:4px; font-size:11px;">{{ $row['item'] }}</td>
+                            <td style="border:1px solid #000; padding:4px; font-size:11px;">{{ $row['qty'] }}</td>
+                            <td style="border:1px solid #000; padding:4px; font-size:11px; text-align:right;">{{ number_format($row['price'], 2) }}</td>
+                            <td style="border:1px solid #000; padding:4px; font-size:11px; text-align:right;">{{ $row['discount'] }}</td>
+                            <td style="border:1px solid #000; padding:4px; font-size:11px; text-align:right;">{{ $row['VAT'] }}</td>
+                            <td style="border:1px solid #000; padding:4px; font-size:11px; text-align:right;">{{ number_format($row['total'], 2) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2" style="padding-top:12px;">
+                <table style="width:100%; border:0; font-size:12px; border-collapse:collapse;">
+                    <tr>
+                        <td style="width:70%; border:0;"></td>
+                        <td style="width:30%; border:0;">
+                            <table style="width:100%; border:0; border-collapse:collapse;">
+                                <tr>
+                                    <td style="border:0; text-align:right;">Discount (EUR):</td>
+                                    <td style="border:0; text-align:right;">{{ number_format($discountEur, 2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:0; text-align:right;">Untaxed Amount (EUR):</td>
+                                    <td style="border:0; text-align:right;">{{ number_format($sumWithoutVAT, 2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:0; text-align:right;">VAT (EUR):</td>
+                                    <td style="border:0; text-align:right;">{{ number_format($vatSum, 2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:0; text-align:right; font-weight:bold;">Total (EUR):</td>
+                                    <td style="border:0; text-align:right; font-weight:bold;">{{ number_format($sumWithVAT, 2) }}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2" style="padding-top:8px; padding-bottom:8px;">
+                <hr style="border:1px solid #ccc; margin:0;">
+                <a href="https://drive.google.com/file/d/1ZCXJOuqZk_hw8OhAESjU4BeaxpscIja8/view" style="font-size:11px; text-decoration:none; color:#000;">
+                    LPSP Sales and delivery terms
+                </a>
+                <hr style="border:1px solid #ccc; margin-top:8px;">
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2" style="padding-top:8px; font-size:12px;">
+                <p style="margin:4px 0;">Total amount in Words: {{ $words ?? '' }}</p>
+                <p style="margin:4px 0;">Sales person: Lauris Puteklis</p>
+                <hr style="border:1px solid #ccc; margin:8px 0;">
+                <p style="text-align:center; margin:4px 0;">{{ now()->format('d/m/Y') }}</p>
+                <hr style="border:1px solid #ccc; margin:8px 0;">
+                <p style="font-size:11px; margin:4px 0;">
+                    The invoice is produced electronically and valid without signature in accordance 
+                    with Article 11 part 7 of the Law "About Accounting".
+                </p>
+            </td>
+        </tr>
+    </table>
     </tr>
 </table>
 

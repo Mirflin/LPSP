@@ -123,6 +123,10 @@ Route::get('/plan-search', [InvoiceController::class, 'getPlan'])
     ->middleware('auth:sanctum')
     ->name('production.plan.get');
 
+Route::post('/invoice-create', [InvoiceController::class, 'print'])
+    ->middleware('auth:sanctum')
+    ->name('production.invoice.print');
+
 
 
 Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {

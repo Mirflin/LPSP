@@ -100,7 +100,8 @@ const save = async() => {
         'price': generalOptions.value.price_for_one,
         'total': generalOptions.value.total,
         'extra_process': generalOptions.value.extra_process,
-        'childs': selectedProduct.value.children
+        'childs': selectedProduct.value.children,
+        'planed': generalOptions.value.count
     }
 
     console.log(data)

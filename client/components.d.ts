@@ -111,7 +111,6 @@ declare module 'vue' {
     Input: typeof import('./src/components/ui/input/Input.vue')['default']
     InputGroup: typeof import('./src/components/forms/FormElements/InputGroup.vue')['default']
     InputState: typeof import('./src/components/forms/FormElements/InputState.vue')['default']
-    YouTubeEmbed: typeof import('./src/components/ui/YouTubeEmbed.vue')['default']
     Label: typeof import('./src/components/ui/label/Label.vue')['default']
     LineChartOne: typeof import('./src/components/charts/LineChart/LineChartOne.vue')['default']
     Modal: typeof import('./src/components/profile/Modal.vue')['default']
@@ -199,5 +198,6 @@ declare module 'vue' {
     TwoColumnImageGrid: typeof import('./src/components/ui/images/TwoColumnImageGrid.vue')['default']
     UserMenu: typeof import('./src/components/layout/header/UserMenu.vue')['default']
     VClickOutside: typeof import('./src/components/common/v-click-outside.vue')['default']
+    YouTubeEmbed: typeof import('./src/components/ui/YouTubeEmbed.vue')['default']
   }
 }
