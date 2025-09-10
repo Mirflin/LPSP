@@ -16,12 +16,16 @@
     <meta charset="UTF-8">
     <title>Plāna PDF</title>
     <style>
+
         @font-face {
-            font-family: 'DejaVu Sans';
-            src: url('{{ public_path('fonts/DejaVuSans.ttf') }}') format('truetype');
+            font-family: 'AbhayaLibre';
+            src: url('{{ storage_path('fonts/AbhayaLibre-Regular.ttf') }}') format('truetype');
+            font-weight: normal;
+            font-style: normal;
         }
+
         body {
-            font-family: 'DejaVu Sans', sans-serif;
+            font-family: 'AbhayaLibre';
             font-size: 12px;
             margin: 0;
             padding: 0;

@@ -131,6 +131,9 @@ class PlanConfirm extends Controller
         $pdf = Pdf::loadView('pdf.plan_confirmation', ['rows' => $rows, 'creds' => $creds, 'client' => $client, 'totalPrice' => $totalPrice])
                   ->setPaper('a4', 'portrait');
         
+        $pdf->getDomPDF()->set_option("isRemoteEnabled", true);
+        $pdf->getDomPDF()->set_option("enable_font_subsetting", true);
+        
         $pdfContent = $pdf->download();
 
         Storage::put('public/pdf/plan_confirmation.pdf', $pdfContent);

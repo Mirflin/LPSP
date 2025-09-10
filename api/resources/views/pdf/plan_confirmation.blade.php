@@ -4,22 +4,24 @@
     <meta charset="UTF-8">
     <title>Plāna PDF</title>
     <style>
+
         @font-face {
-            font-family: 'DejaVu Sans';
-            src: url('{{ public_path('fonts/DejaVuSans.ttf') }}') format('truetype');
+            font-family: 'AbhayaLibre';
+            src: url('{{ storage_path('fonts/AbhayaLibre-Regular.ttf') }}') format('truetype');
+            font-weight: normal;
+            font-style: normal;
         }
+
         body {
-            font-family: 'DejaVu Sans', sans-serif;
-            font-size: 12px;
-            margin: 0;
-            padding: 0;
+            font-family: 'AbhayaLibre';
         }
+
     </style>
 </head>
 <body>
-<table style="width:187mm; height: 100%; background:#fff; font-size:14px; font-family:sans-serif; border-collapse:separate; border-spacing:0;">
+<table style="width:187mm; height: 100%; background:#fff; font-size:14px; border-collapse:separate; border-spacing:0;">
     <tr>
-        <td colspan="2" style="padding-bottom:16px;">
+        <td colspan="2" style="padding-bottom:4px;">
             <table style="width:100%;">
                 <tr>
                     <td style="width:120px; vertical-align:middle;">
@@ -33,7 +35,7 @@
         </td>
     </tr>
     <tr>
-        <td colspan="2" style="padding-bottom:12px;">
+        <td colspan="2" style="padding-bottom:3px;">
             <table style="width:100%;">
                 <tr>
                     <td style="vertical-align:top; width:50%;">
@@ -56,15 +58,15 @@
             </table>
         </td>
     </tr>
-    <tr><td colspan="2"><hr style="border:1px solid #ccc; margin:4px 0;"></td></tr>
+    <tr><td colspan="2"><hr style="border:1px solid #ccc; margin:2px 0;"></td></tr>
     <tr>
-        <td colspan="2" style="padding-bottom:4px;">
+        <td colspan="2" style="padding-bottom:2px;">
             <a style="margin:12px 0; display:inline-block;" href="https://drive.google.com/file/d/1ZCXJOuqZk_hw8OhAESjU4BeaxpscIja8/view">LPSP Sales and delivery terms</a>
         </td>
     </tr>
     <tr><td colspan="2"><hr style="border:1px solid #ccc; margin:8px 0;"></td></tr>
     <tr>
-        <td colspan="2" style="padding-bottom:12px;">
+        <td colspan="2" style="padding-bottom:3px;">
             <table style="width:100%;">
                 <tr>
                     <td style="vertical-align:top; width:50%;">
@@ -89,7 +91,7 @@
     </tr>
     <tr><td colspan="2"><hr style="border:1px solid #ccc; margin:4px 0;"></td></tr>
     <tr>
-        <td colspan="2" style="padding-top:12px;">
+        <td colspan="2" style="padding-top:6px;">
             <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;">
                 <thead>
                     <tr style="background:#f3f3f3;">
@@ -116,13 +118,40 @@
                         <td style="border:1px solid #ccc; padding:2px;">{{ $row['price'] ?? '-' }}</td>
                         <td style="border:1px solid #ccc; padding:2px;">{{ $row['total'] ?? '-' }}</td>
                     </tr>
-                        @if ( $n % 25 == 0 )
+                        @if ( $n % 23 == 0 )
                             <div style="page-break-before:always;"> </div>
                         @endif
 
                         <?php 
-                            if($n == count($rows) && $n % 25 > 0) {
-                                for($i = $n % 25; $i < 25; $i++) {
+                            if(count($rows) < 1){
+                                for($i = $n % 23; $i < 23; $i++) {
+                                    if($i == 2){
+                                        echo '<tr>
+                                                <td style="border:1px solid #ccc; padding:2px; height:15px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px; font-weight: bold;">Order sum</td>
+                                                <td style="border:1px solid #ccc; padding:2px;">'. $totalPrice .'</td>
+                                             </tr>';
+                                    }else{
+                                        echo '<tr>
+                                                <td style="border:1px solid #ccc; padding:2px; height:15px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                                <td style="border:1px solid #ccc; padding:2px;"></td>
+                                             </tr>';
+                                    }
+                                }
+                            }
+                            elseif($n == count($rows) && $n % 23 > 0) {
+                                for($i = $n % 23; $i < 23; $i++) {
                                     if($i == 2){
                                         echo '<tr>
                                                 <td style="border:1px solid #ccc; padding:2px; height:15px;"></td>

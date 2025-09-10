@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <title>Plāna PDF</title>
     <style>
+
         @font-face {
-            font-family: 'DejaVu Sans';
-            src: url('{{ public_path('fonts/DejaVuSans.ttf') }}') format('truetype');
+            font-family: 'AbhayaLibre';
+            src: url('{{ storage_path('fonts/AbhayaLibre-Regular.ttf') }}') format('truetype');
+            font-weight: normal;
+            font-style: normal;
         }
+
         body {
-            font-family: 'DejaVu Sans', sans-serif;
+            font-family: 'AbhayaLibre';
             font-size: 12px;
             margin: 0;
             padding: 0;
@@ -17,7 +21,7 @@
     </style>
 </head>
 <body>
-<table style="width:187mm; height: 100%; background:#fff; font-size:14px; font-family:sans-serif; border-collapse:separate; border-spacing:0;">
+<table style="width:187mm; height: 100%; background:#fff; font-size:14px; border-collapse:separate; border-spacing:0;">
     <tr>
         <td colspan="2" style="padding-bottom:8px;">
             <table style="width:100%;">
