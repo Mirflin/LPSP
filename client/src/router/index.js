@@ -244,6 +244,36 @@ const router = createRouter({
         requireAuth: true
       },
     },
+    {
+      path: '/history',
+      name: 'History',
+      component: () => import('../views/History/History.vue'),
+      meta: {
+        title: 'History',
+        requireAuth: true
+      },
+      
+    },
+    {
+      path: '/user-list',
+      name: 'Users',
+      component: () => import('../views/Users/Users.vue'),
+      meta: {
+        title: 'Users',
+        requireAuth: true
+      },
+      
+    },
+    {
+      path: '/plan-completed',
+      name: 'PlanCompleted',
+      component: () => import('../views/Production/PlanCompleted/PlanCompleted.vue'),
+      meta: {
+        title: 'PlanCompleted',
+        requireAuth: true
+      },
+    }
+    
   ],
 })
 

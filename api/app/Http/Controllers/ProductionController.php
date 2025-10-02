@@ -22,6 +22,7 @@ use Yaza\LaravelGoogleDriveStorage\Gdrive;
 use Str;
 use App\Jobs\GoogleDrive;
 use App\Events\NewProduct;
+use App\Models\ActionHistory;
 
 class ProductionController extends Controller
 {
@@ -190,6 +191,11 @@ class ProductionController extends Controller
         }
 
         $newProd = $this->getProductById($product->id);
+
+        ActionHistory::create([
+            'user_id' => Auth::user()->id,
+            'action' => 'Created new product '. $product->id 
+        ]);
 
         broadcast(new NewProduct($newProd))->toOthers();
 

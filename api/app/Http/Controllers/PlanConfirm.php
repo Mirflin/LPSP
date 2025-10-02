@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Plan;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Client;
+use App\Models\ActionHistory;
 
 class PlanConfirm extends Controller
 {
@@ -32,7 +34,7 @@ class PlanConfirm extends Controller
 
             if(isset($plan->subplan)){
                 foreach($plan->subplan as $sub){
-                    Log::info($sub);
+
                     $temp = [
                         'po_nr' => $plan->po_nr,
                         'customer' => $plan->client->name,
@@ -68,6 +70,36 @@ class PlanConfirm extends Controller
         return response()->json(['data' => $data, 'total' => $totalPrice]);
     }
 
+    public function completedPlans(Request $request){
+
+        if(Auth::user()->permission != 1){
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $page = $request->input('current_page', 1);
+        $search = $request->input('search', '');
+
+        $query = Plan::with([
+            'client',
+            'subplan.product',
+            'product.processes.processList',
+        ])->where('statuss', 2);
+
+        if(!empty($search)){
+            $query->where(function($q) use ($search){
+                $q->where('po_nr', 'like', '%'.$search.'%')
+                  ->orWhereHas('client', function($q2) use ($search){
+                      $q2->where('name', 'like', '%'.$search.'%');
+                  });
+            });
+        }
+
+        $history = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json($history);
+    }
+
     public function print(Request $request)
     {
         $client_id = $request->input('client_id');
@@ -86,7 +118,16 @@ class PlanConfirm extends Controller
             $q->where('id', $client_id);
         });
 
-        $plans = $query->where('statuss', '!=', 4)->get();
+        
+
+        $plans = $query->where('statuss', 0)
+               ->take(25)
+               ->get();
+
+        foreach($plans as $plan){
+            $plan->statuss = 6;
+            $plan->save();
+        }
 
         $rows = [];
         $totalPrice = 0;
@@ -135,6 +176,11 @@ class PlanConfirm extends Controller
         $pdf->getDomPDF()->set_option("enable_font_subsetting", true);
         
         $pdfContent = $pdf->download();
+
+        ActionHistory::create([
+            'user_id' => Auth::user()->id,
+            'action' => 'Printed plan confirmation pdf'
+        ]);
 
         Storage::put('public/pdf/plan_confirmation.pdf', $pdfContent);
 

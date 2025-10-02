@@ -28,7 +28,8 @@ class SubPlan extends Model
             1 => 'In Production',
             2 => 'Completed',
             3 => 'Cancelled',
-            4 => 'Aproved'
+            4 => 'Aproved',
+            4 => 'Invoice needed',
         ];
 
         return $map[$this->statuss] ?? 'Unknown';

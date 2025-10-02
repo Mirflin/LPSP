@@ -81,7 +81,7 @@ const updateRows = async() => {
         qty: selectedPlan.value.planed,
         price: selectedPlan.value.price,
         discount: 0,
-        VAT: 0,
+        VAT: 21,
         total: selectedPlan.value.price * selectedPlan.value.planed
     })
 
@@ -93,7 +93,7 @@ const updateRows = async() => {
             qty: selectedPlan.value.planed*sub.product.count,
             price: sub.cost,
             discount: 0,
-            VAT: 0,
+            VAT: 21,
             total: selectedPlan.value.planed*sub.product.count*sub.cost
         })
     });
@@ -241,7 +241,7 @@ const payment = () => {
             <multiselect 
                 v-model="selectedPlan" id="ajax" label="name" track-by="po_nr" placeholder="Type plan nr. to search"
                 open-direction="bottom" :options="planSearch" :multiple="false" :searchable="true" :loading="loading"
-                :internal-search="false" :clear-on-select="false" :close-on-select="true" :options-limit="10"
+                :internal-search="false" :clear-on-select="false" :close-on-select="true"
                 :limit="1" :max-height="600" :show-no-results="false" :hide-selected="true"
                 @search-change="getPlan" @select="updateRows" class="z-[10000] mb-5"
             >

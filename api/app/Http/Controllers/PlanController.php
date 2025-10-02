@@ -14,6 +14,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use App\Events\PlanUpdate;
 use App\Events\NewPlan;
+use App\Models\ActionHistory;
 
 class PlanController extends Controller
 {
@@ -116,6 +117,11 @@ class PlanController extends Controller
             'product.processes.processList',
         ])->find($plan->id);
 
+        ActionHistory::create([
+            'user_id' => Auth::user()->id,
+            'action' => 'Created new plan '. $plan->id 
+        ]);
+
         broadcast(new NewPlan($query))->toOthers();
         return response()->json(['message' => 'Plan created successfully!']);
     }
@@ -131,6 +137,11 @@ class PlanController extends Controller
         $plan->sended = $sended;
 
         $plan->save();
+
+        ActionHistory::create([
+            'user_id' => Auth::user()->id,
+            'action' => 'Produced count changeon '. $plan->po_nr .' plan'
+        ]);
 
         return response()->json(['message' => 'Updated successfully']);
     }
@@ -188,7 +199,9 @@ class PlanController extends Controller
             1 => 'In Production',
             2 => 'Completed',
             3 => 'Cancelled',
-            4 => 'Aproved'
+            4 => 'Aproved',
+            5 => 'Invoice needed',
+            6 => 'Waiting Approval',
         ];
 
         $reverseMap = array_flip($map);
@@ -207,6 +220,11 @@ class PlanController extends Controller
 
 
         $plan->save();
+
+        ActionHistory::create([
+            'user_id' => Auth::user()->id,
+            'action' => 'Changed '. $plan->po_nr.' plan status'
+        ]);
 
         $plan = Plan::with([
             'client',
@@ -227,7 +245,9 @@ class PlanController extends Controller
             1 => 'In Production',
             2 => 'Completed',
             3 => 'Cancelled',
-            4 => 'Aproved'
+            4 => 'Aproved',
+            5 => 'Invoice needed',
+            6 => 'Waiting Approval',
         ];
 
         $reverseMap = array_flip($map);
@@ -247,6 +267,13 @@ class PlanController extends Controller
 
 
         $subplan->save();
+
+        $plan = Plan::find($subplan->plan_id);
+
+        ActionHistory::create([
+            'user_id' => Auth::user()->id,
+            'action' => 'Updated '. $plan->po_nr .' subplan status'
+        ]);
 
         $plan = Plan::with([
             'client',

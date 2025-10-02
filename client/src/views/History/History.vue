@@ -5,18 +5,17 @@ import { onMounted, onUnmounted, reactive, ref, computed, toRaw, watch, isRef, i
 import moment from 'moment'
 import { useProductionStore } from '@/storage/production'
 import { useAuthStore } from '@/storage/auth'
-import ProductsTable from './ProductsTable.vue'
 import {useClientsStore} from '@/storage/clients.js'
 import { Button } from "@/components/ui/button"
 import TimedAlert from '@/components/TimedAlert.vue'
-import ProductInfo from './ProductInfo.vue'
 import RefreshIcon from '@/icons/RefreshIcon.vue'
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import { read, writeFileXLSX, } from "xlsx";
 import XLSX from "xlsx"
 import PlusIcon from '@/icons/PlusIcon.vue'
 import {useProductCreate} from '@/storage/product_create.js'
-
+import '@bhplugin/vue3-datatable/dist/style.css'
+import axios from 'axios'
 
 const production = useProductionStore()
 const loading = ref(false)
@@ -57,36 +56,30 @@ onMounted(async() => {
 
 const cols = ref([
   { field: 'id', title: 'ID' },
-  { field: 'drawing_nr', title: 'Drawing number', hide: false },
-  { field: 'part_nr', title: 'Part number', hide: false },
-  { field: 'revision', title: 'Revision', hide: false },
-  { field: 'description', title: 'Description', hide: false },
-  { field: 'additional_info', title: 'Additional info', hide: false },
-  { field: 'weight', title: 'Weight', hide: true },
-  { field: 'client.name', title: 'Client', hide: false },
+  { field: 'user', title: 'User', hide: false },
+  { field: 'action', title: 'Action', hide: false },
   { field: 'updated_at', title: 'Updated at', hide: true },
   { field: 'created_at', title: 'Created at', hide: true },
 ])
 
 const update_row = (updated_row) => {
   row.value = updated_row
-  console.log(row.value)
   openModalView.value = true
 }
 
 const fetchData = async () => {
   loading.value = true
   try {
-    const response = await production.fetchProducts({
+    const response = await axios.get('/api/history', {
       page: params.current_page,
       perPage: params.pagesize,
       sort: params.sort_column,
       direction: params.sort_direction,
       search: params.search,
-    })
+    });
 
-    rows.value = production.products
-    total_rows.value = production.total_products
+    rows.value = response.data.history
+    total_rows.value = response.data.total
   } finally {
     loading.value = false
   }
@@ -181,7 +174,7 @@ const exportTable = () => {
 };
 
 
-const currentPageTitle = 'Products'
+const currentPageTitle = 'History'
 </script>
 
 <template>
@@ -219,12 +212,8 @@ const currentPageTitle = 'Products'
                     <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
             </button>
-            <Button @click="exportTable" class="bg-green-500 hover:bg-green-300">Export to excel</Button>
           </div>
             <div class="flex items-center gap-5">
-              <RouterLink to="/product-create">
-                <PlusIcon class="text-green-500 scale-300 rounded-md hover:bg-gray-100 transition"></PlusIcon>
-              </RouterLink>
               <button @click="fetchData; datatable.reset()" class="p-2 rounded-md hover:bg-gray-100 transition">
                 <RefreshIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 transition" />
               </button>
@@ -260,9 +249,11 @@ const currentPageTitle = 'Products'
             :sortDirection="params.sort_direction"
             :isServerMode="true"
             :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer dark:hover:bg-blue-900'" 
-            @rowClick="update_row"
             @change="changeServer"
         >
+            <template #user="data">
+                {{ data.value.user.last_name }}
+            </template>
             <template #created_at="data">
                 <span class="text-gray-500">{{ data.value.created_at ? moment(data.value.created_at).format('YYYY-MM-DD') : 'no data' }}</span>
             </template>
@@ -274,7 +265,3 @@ const currentPageTitle = 'Products'
 
     </AdminLayout>
 </template>
-
-<style scoped> 
-
-</style>

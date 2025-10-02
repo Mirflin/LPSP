@@ -10,7 +10,9 @@ use App\Http\Controllers\PlanController;
 use App\Http\Controllers\PlanConfirm;
 use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\HistoryController;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\UserController;
 
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
@@ -92,6 +94,10 @@ Route::post('/plan-create', [PlanController::class, 'create'])
     ->middleware('auth:sanctum')
     ->name('production.plan.create');
 
+Route::post('/plan-completed', [PlanConfirm::class, 'completedPlans'])
+    ->middleware('auth:sanctum')
+    ->name('production.plan.completed');
+
 Route::post('/plan-status', [PlanController::class, 'status'])
     ->middleware('auth:sanctum')
     ->name('production.plan.status');
@@ -141,3 +147,9 @@ Route::middleware('auth:sanctum')->get('/download/{path}', function ($path) {
 
 Route::post('/plans/download', [PlanController::class, 'download']);
 Route::post('/download/files', [PlanController::class, 'downloadFiles']);
+
+Route::get('/history', [HistoryController::class, 'getHistory']);
+
+Route::post('/users-list', [UserController::class, 'getUsersList']);
+
+Route::post('/users-create', [UserController::class, 'createUser']);

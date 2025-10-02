@@ -55,6 +55,8 @@ class Plan extends Model
             2 => 'Completed',
             3 => 'Cancelled',
             4 => 'Aproved',
+            5 => 'Invoice needed',
+            6 => 'Waiting Approval',
         ];
 
         return $map[$this->statuss] ?? 'Unknown';

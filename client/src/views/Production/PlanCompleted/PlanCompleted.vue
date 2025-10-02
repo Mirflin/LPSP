@@ -8,10 +8,8 @@ import RefreshIcon from '../../../icons/RefreshIcon.vue';
 import { Badge } from '@/components/ui/badge';
 import { read, writeFileXLSX, } from "xlsx";
 import XLSX from "xlsx"
-import PlanCreate from './PlanCreate.vue';
 import PlusIcon from '@/icons/PlusIcon.vue';
 import moment from 'moment'
-import PlanSheet from './PlanSheet.vue';
 import {
   Select,
   SelectContent,
@@ -72,7 +70,7 @@ const params = reactive({
   current_page: 1,
   pagesize: 10,
   sort_column: "id",
-  sort_direction: "desc",
+  sort_direction: "asc",
   search: "",
 })
 
@@ -105,21 +103,20 @@ const refreshTimeout = ref(false)
 
 const sheetRow = ref(null)
 
-const fetchData = async () => {
+const fetchData = async (cur) => {
   loading.value = true
   try {
-    const response = await production.fetchPlan({
-      page: params.current_page,
+    const response = await axios.post('/api/plan-completed',{
+      current_page: params.current_page,
       perPage: params.pagesize,
       sort: params.sort_column,
       direction: params.sort_direction,
       search: params.search,
-      filters: filters.value,
       completed: completed.value
     })
 
-    rows.value = production.plans
-    total_rows.value = production.total
+    rows.value = response.data.data
+    total_rows.value = response.data.total
   } finally {
     loading.value = false
   }
@@ -134,7 +131,7 @@ const changeServer = (data) => {
   params.pagesize = data.pagesize
   params.sort_column = data.field
   params.sort_direction = data.direction
-  fetchData()
+  fetchData(params.current_page)
 }
 
 const badgeStyle = (label) => {
@@ -147,7 +144,6 @@ const badgeStyle = (label) => {
       return 'bg-orange-400'
     case "In Production":
     case "Waiting Supplier":
-    case "Waiting Approval":
       return 'bg-blue-500'
     case "Completed":
     case "Delivered":
@@ -313,12 +309,6 @@ const productColor = (product) => {
           :message="alert_message"
         />
 
-        <Modal v-if="showCreateModal">
-          <template #body>
-            <PlanCreate @close="showCreateModal = false"></PlanCreate>
-          </template>
-        </Modal>
-
         <div class="mb-5 relative flex justify-between">
           <div class="flex items-center gap-5">
             <button type="button" class="dark:bg-dark-900 h-11 w-40 flex rounded-lg border border-gray-200 bg-transparent py-2.5 pl-4 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" @click="isOpen = !isOpen">
@@ -342,7 +332,6 @@ const productColor = (product) => {
           </div>
 
           <div class="flex items-center gap-5">
-            <PlusIcon @click="showCreateModal = true" class="text-green-500 w-5 cursor-pointer scale-300 rounded-md hover:bg-gray-100 transition"></PlusIcon>
             <button @click="fetchData" :disabled="refreshTimeout" class="p-2 rounded-md hover:bg-gray-100 transition">
               <RefreshIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 transition" />
             </button>
@@ -369,13 +358,10 @@ const productColor = (product) => {
             :columns="cols"
             :totalRows="total_rows"
             :loading="loading"
-            :pagination="false"
+            :pagination="true"
             skin="bh-table-compact"
             :search="params.search"
-            :sortColumn="params.sort_column"
-            :sortDirection="params.sort_direction"
             :isServerMode="true"
-            :stickyHeader="true"
             class="table-test min-h-100"
             :rowClass="'text-sm text-gray-800 dark:text-gray-300 text-center hover:bg-gray-100 hover:cursor-pointer dark:hover:bg-blue-900'"
             @change="changeServer"
@@ -407,9 +393,6 @@ const productColor = (product) => {
                     <SelectLabel>Status</SelectLabel>
                       <SelectItem value="Pending">
                         Pending
-                      </SelectItem>
-                      <SelectItem value="Waiting Approval">
-                        Waiting Approval
                       </SelectItem>
                       <SelectItem value="Aproved">
                         Aproved
@@ -513,9 +496,6 @@ const productColor = (product) => {
                           <SelectLabel>Status</SelectLabel>
                             <SelectItem value="Pending">
                               Pending
-                            </SelectItem>
-                            <SelectItem value="Waiting Approval">
-                              Waiting Approval
                             </SelectItem>
                             <SelectItem value="Aproved">
                               Aproved

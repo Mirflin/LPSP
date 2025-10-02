@@ -42,6 +42,14 @@ return new class extends Migration
         DB::table('users')->insert([
             ['name' => 'Root', 'last_name' => '...', 'email' => 'admin@test.com', 'password' => Hash::make("password"), 'permission' => 1],
         ]);
+
+        DB::table('users')->insert([
+            ['name' => 'Lauris', 'last_name' => 'Puteklis', 'email' => 'lauris.puteklis@lpsp.lv', 'password' => Hash::make("laurisputeklis"), 'permission' => 1],
+        ]);
+
+        DB::table('users')->insert([
+            ['name' => 'Kaspars', 'last_name' => 'B', 'email' => 'karspars.b@lpsp.lv', 'password' => Hash::make("kasparsb"), 'permission' => 1],
+        ]);
     }
 
     /**

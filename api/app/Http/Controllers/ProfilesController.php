@@ -69,7 +69,11 @@ class ProfilesController extends Controller
             $profile->save();
             $user->save();
 
-            Log::info($user);
+            ActionHistory::create([
+                'user_id' => Auth::user()->id,
+                'action' => 'Updated prodile '. $user->id 
+            ]);
+
             return response()->json(['message' => 'Profile updated successfully!'], 200);
         }
         return response()->json(['message' => 'Profile didn\'t exists'], 404);

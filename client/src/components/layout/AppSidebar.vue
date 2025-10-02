@@ -60,148 +60,152 @@
                   : 'justify-start',
               ]"
             >
-              <template v-if="isExpanded || isHovered || isMobileOpen">
+              <template v-if="(isExpanded || isHovered || isMobileOpen)">
                 {{ menuGroup.title }}
               </template>
               <HorizontalDots v-else />
             </h2>
             <ul class="flex flex-col gap-4">
               <li v-for="(item, index) in menuGroup.items" :key="item.name">
-                <button
-                  v-if="item.subItems"
-                  @click="toggleSubmenu(groupIndex, index)"
-                  :class="[
-                    'menu-item group w-full',
-                    {
-                      'menu-item-active': isSubmenuOpen(groupIndex, index),
-                      'menu-item-inactive': !isSubmenuOpen(groupIndex, index),
-                    },
-                    !isExpanded && !isHovered
-                      ? 'lg:justify-center'
-                      : 'lg:justify-start',
-                  ]"
-                >
-                  <span
+                <div v-if="item.permissions">
+                  <button
+                    v-if="item.subItems"
+                    @click="toggleSubmenu(groupIndex, index)"
                     :class="[
-                      isSubmenuOpen(groupIndex, index)
-                        ? 'menu-item-icon-active'
-                        : 'menu-item-icon-inactive',
+                      'menu-item group w-full',
+                      {
+                        'menu-item-active': isSubmenuOpen(groupIndex, index),
+                        'menu-item-inactive': !isSubmenuOpen(groupIndex, index),
+                      },
+                      !isExpanded && !isHovered
+                        ? 'lg:justify-center'
+                        : 'lg:justify-start',
                     ]"
                   >
-                    <component :is="item.icon" />
-                  </span>
-                  <span
-                    v-if="isExpanded || isHovered || isMobileOpen"
-                    class="menu-item-text"
-                    >{{ item.name }}</span
-                  >
-                  <ChevronDownIcon
-                    v-if="isExpanded || isHovered || isMobileOpen"
+                    <span
+                      :class="[
+                        isSubmenuOpen(groupIndex, index)
+                          ? 'menu-item-icon-active'
+                          : 'menu-item-icon-inactive',
+                      ]"
+                    >
+                      <component :is="item.icon" />
+                    </span>
+                    <span
+                      v-if="isExpanded || isHovered || isMobileOpen"
+                      class="menu-item-text"
+                      >{{ item.name }}</span
+                    >
+                    <ChevronDownIcon
+                      v-if="isExpanded || isHovered || isMobileOpen"
+                      :class="[
+                        'ml-auto w-5 h-5 transition-transform duration-200',
+                        {
+                          'rotate-180 text-brand-500': isSubmenuOpen(
+                            groupIndex,
+                            index
+                          ),
+                        },
+                      ]"
+                    />
+                  </button>
+                  <router-link
+                    v-else-if="item.path"
+                    :to="item.path"
                     :class="[
-                      'ml-auto w-5 h-5 transition-transform duration-200',
+                      'menu-item group',
                       {
-                        'rotate-180 text-brand-500': isSubmenuOpen(
-                          groupIndex,
-                          index
-                        ),
+                        'menu-item-active': isActive(item.path),
+                        'menu-item-inactive': !isActive(item.path),
                       },
                     ]"
-                  />
-                </button>
-                <router-link
-                  v-else-if="item.path"
-                  :to="item.path"
-                  :class="[
-                    'menu-item group',
-                    {
-                      'menu-item-active': isActive(item.path),
-                      'menu-item-inactive': !isActive(item.path),
-                    },
-                  ]"
-                >
-                  <span
-                    :class="[
-                      isActive(item.path)
-                        ? 'menu-item-icon-active'
-                        : 'menu-item-icon-inactive',
-                    ]"
                   >
-                    <component :is="item.icon" />
-                  </span>
-                  <span
-                    v-if="isExpanded || isHovered || isMobileOpen"
-                    class="menu-item-text"
-                    >{{ item.name }}</span
+                    <span
+                      :class="[
+                        isActive(item.path)
+                          ? 'menu-item-icon-active'
+                          : 'menu-item-icon-inactive',
+                      ]"
+                    >
+                      <component :is="item.icon" />
+                    </span>
+                    <span
+                      v-if="isExpanded || isHovered || isMobileOpen"
+                      class="menu-item-text"
+                      >{{ item.name }}</span
+                    >
+                  </router-link>
+                  <transition
+                    @enter="startTransition"
+                    @after-enter="endTransition"
+                    @before-leave="startTransition"
+                    @after-leave="endTransition"
                   >
-                </router-link>
-                <transition
-                  @enter="startTransition"
-                  @after-enter="endTransition"
-                  @before-leave="startTransition"
-                  @after-leave="endTransition"
-                >
-                  <div
-                    v-show="
-                      isSubmenuOpen(groupIndex, index) &&
-                      (isExpanded || isHovered || isMobileOpen)
-                    "
-                  >
-                    <ul class="mt-2 space-y-1 ml-9">
-                      <li v-for="subItem in item.subItems" :key="subItem.name">
-                        <router-link
-                          :to="subItem.path"
-                          :class="[
-                            'menu-dropdown-item',
-                            {
-                              'menu-dropdown-item-active': isActive(
-                                subItem.path
-                              ),
-                              'menu-dropdown-item-inactive': !isActive(
-                                subItem.path
-                              ),
-                            },
-                          ]"
-                        >
-                          {{ subItem.name }}
-                          <span class="flex items-center gap-1 ml-auto">
-                            <span
-                              v-if="subItem.new"
+                    <div
+                      v-show="
+                        isSubmenuOpen(groupIndex, index) &&
+                        (isExpanded || isHovered || isMobileOpen)
+                      "
+                    >
+                      <ul class="mt-2 space-y-1 ml-9">
+                        <li v-for="subItem in item.subItems" :key="subItem.name">
+                          <div v-if="subItem.permissions">
+                            <router-link
+                              :to="subItem.path"
                               :class="[
-                                'menu-dropdown-badge',
+                                'menu-dropdown-item',
                                 {
-                                  'menu-dropdown-badge-active': isActive(
+                                  'menu-dropdown-item-active': isActive(
                                     subItem.path
                                   ),
-                                  'menu-dropdown-badge-inactive': !isActive(
+                                  'menu-dropdown-item-inactive': !isActive(
                                     subItem.path
                                   ),
                                 },
                               ]"
                             >
-                              new
-                            </span>
-                            <span
-                              v-if="subItem.pro"
-                              :class="[
-                                'menu-dropdown-badge',
-                                {
-                                  'menu-dropdown-badge-active': isActive(
-                                    subItem.path
-                                  ),
-                                  'menu-dropdown-badge-inactive': !isActive(
-                                    subItem.path
-                                  ),
-                                },
-                              ]"
-                            >
-                              pro
-                            </span>
-                          </span>
-                        </router-link>
-                      </li>
-                    </ul>
-                  </div>
-                </transition>
+                              {{ subItem.name }}
+                              <span class="flex items-center gap-1 ml-auto">
+                                <span
+                                  v-if="subItem.new"
+                                  :class="[
+                                    'menu-dropdown-badge',
+                                    {
+                                      'menu-dropdown-badge-active': isActive(
+                                        subItem.path
+                                      ),
+                                      'menu-dropdown-badge-inactive': !isActive(
+                                        subItem.path
+                                      ),
+                                    },
+                                  ]"
+                                >
+                                  new
+                                </span>
+                                <span
+                                  v-if="subItem.pro"
+                                  :class="[
+                                    'menu-dropdown-badge',
+                                    {
+                                      'menu-dropdown-badge-active': isActive(
+                                        subItem.path
+                                      ),
+                                      'menu-dropdown-badge-inactive': !isActive(
+                                        subItem.path
+                                      ),
+                                    },
+                                  ]"
+                                >
+                                  pro
+                                </span>
+                              </span>
+                            </router-link>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </transition>
+                </div>
               </li>
             </ul>
           </div>
@@ -238,8 +242,11 @@ import SupportIcon from "../../icons/SupportIcon.vue";
 import SettingsIcon from "@/icons/SettingsIcon.vue";
 import { Paperclip } from "lucide-vue-next";
 import PaperclipIcon from "@/icons/PaperclipIcon.vue";
+import { HistoryIcon } from "lucide-vue-next";
+import {useAuthStore} from '@/storage/auth.js'
 
 const route = useRoute();
+const auth = useAuthStore();
 
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 
@@ -248,36 +255,48 @@ const menuGroups = [
     title: "Menu",
     items: [
       {
-        icon: GridIcon,
-        name: "Dashboard",
-        subItems: [{ name: "Ecommerce", path: "/", pro: false }],
-      },
-      {
         name: "Production",
         icon: PaperclipIcon,
         subItems: [
-          { name: "Invoice", path: "/invoice", pro: false },
-          { name: "Plan Confirmation", path: "/pconfirm", pro: false },
-          { name: "Plan", path: "/plan", pro: false },
-          { name: "Product", path: "/product", pro: false },
-          { name: "Materials", path: "/materials", pro: false },
+          { name: "Invoice", path: "/invoice", pro: false , permissions: auth.user.permission <= 1},
+          { name: "Plan Confirmation", path: "/pconfirm", pro: false , permissions: auth.user.permission <= 1},
+          { name: "Plan", path: "/plan", pro: false , permissions: auth.user.permission <= 3},
+          { name: "Product", path: "/product", pro: false , permissions: auth.user.permission <= 1},
+          { name: "Materials", path: "/materials", pro: false , permissions: auth.user.permission <= 2},
+          { name: "Completed plans", path: "/plan-completed", pro: false , permissions: auth.user.permission <= 2},
         ],
+        permissions: auth.user.permission <= 3
       },
       {
         icon: UserCircleIcon,
         name: "User Profile",
         path: "/profile",
+        permissions: auth.user.permission <= 3
       },
       {
         icon: SettingsIcon,
         name: "LPSP credentials",
         path: "/credentials",
+        permissions: auth.user.permission <= 1
       },
       {
         icon: SupportIcon,
         name: "Clients",
         path: "/clients",
+        permissions: auth.user.permission <= 1
       },
+      {
+        icon: HistoryIcon,
+        name: "History",
+        path: "/history",
+        permissions: auth.user.permission <= 1
+      },
+      {
+        icon: UserCircleIcon,
+        name: "Users",
+        path: "/user-list",
+        permissions: auth.user.permission <= 1
+      }
     ],
   },
 ];

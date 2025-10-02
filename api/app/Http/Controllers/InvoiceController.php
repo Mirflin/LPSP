@@ -7,6 +7,7 @@ use App\Models\lpsp_credentials;
 use App\Models\Plan;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Client;
+use App\Models\ActionHistory;
 
 class InvoiceController extends Controller
 {
@@ -43,7 +44,7 @@ class InvoiceController extends Controller
             $query->where('po_nr', 'like', '%' . $search . '%');
         }
 
-        $query->where('statuss', '!=', 2);
+        $query->where('statuss', 5);
 
         $plans = $query->get();
 

@@ -12,12 +12,6 @@
             font-style: normal;
         }
 
-        body {
-            font-family: 'AbhayaLibre';
-            font-size: 12px;
-            margin: 0;
-            padding: 0;
-        }
     </style>
 </head>
 <body>

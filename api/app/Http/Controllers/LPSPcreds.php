@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\lpsp_credentials;
+use App\Models\ActionHistory;
 
 class LPSPcreds extends Controller
 {
@@ -42,6 +43,12 @@ class LPSPcreds extends Controller
             $creds->registration_nr = $request->input('registration');
 
             if($creds->save()){
+
+                ActionHistory::create([
+                    'user_id' => Auth::user()->id,
+                    'action' => 'Updated LPSP credentials'
+                ]);
+
                 return response()->json(['message' => 'Credentials updated successfully'], 200);
             } else {
                 return response()->json(['message' => 'Failed to update credentials'], 500);
